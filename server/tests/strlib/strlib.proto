@@ -1,0 +1,41 @@
+syntax = "proto3";
+package strlib.v1;
+
+//import "google/protobuf/duration.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "StrLib public API";
+    version: "2.0";
+  };
+  schemes: [HTTP,HTTPS];
+  consumes: "application/json";
+  produces: "application/json";
+};
+
+option go_package = "/strlib";
+
+//strlib string lib service
+service strlib{
+  rpc Uppercase(UppercaseQuery) returns(UppercaseResponse){
+    option (google.api.http) = {
+      post: "/v1/uppercase"
+      body: "*"
+    };
+  }
+}
+
+
+//uppercase string query
+message UppercaseQuery{
+  string value = 1;
+}
+
+//uppercase string response
+message UppercaseResponse{
+  string value = 1;
+}
+
