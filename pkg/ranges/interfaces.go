@@ -8,15 +8,19 @@ import (
 type (
 	boundTagID interface{ privateTagID() }
 
+	//Upper is constraint of upper bound
 	Upper struct{ boundTagID }
 
+	//Lower is constraint of lower bound
 	Lower struct{ boundTagID }
 
+	//BoundTag bound kind constraint
 	BoundTag interface {
 		boundTagID
 		Lower | Upper
 	}
 
+	//Bound an interface of range bound
 	Bound[T any] interface {
 		fmt.Stringer
 		GetValue() (val T, excluded bool)
@@ -31,6 +35,7 @@ type (
 		AsExcluded() Bound[T]
 	}
 
+	//Range an interface of range
 	Range[T any] interface {
 		fmt.Stringer
 		IsNull() bool
@@ -42,6 +47,7 @@ type (
 		Copy() Range[T]
 	}
 
+	//Factory ranges factory
 	Factory[T any] interface {
 		MinMax() (min T, max T)
 		Bound(tag boundTagID, v T, exclude bool) Bound[T]

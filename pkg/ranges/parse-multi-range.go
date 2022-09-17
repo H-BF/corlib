@@ -5,8 +5,10 @@ import (
 	"regexp"
 )
 
+//RangeParser range parser function
 type RangeParser[T any, S ParseSources] func(S) (Range[T], error)
 
+//ParseMultiRange parse multi range
 func ParseMultiRange[T any, S ParseSources, S1 ParseSources](
 	in S,
 	parser RangeParser[T, S1],
@@ -17,7 +19,7 @@ func ParseMultiRange[T any, S ParseSources, S1 ParseSources](
 	).Interface().([]byte)
 	re := reMultiRange.FindAll(source, -1)
 	if len(re) == 0 {
-		return SourceMatchError
+		return ErrSourceMatch
 	}
 	for _, s := range re {
 		i, err := parser(S1(s))

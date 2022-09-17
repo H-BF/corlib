@@ -374,7 +374,7 @@ func testCombineMerge(t *testing.T) {
 	}
 	buf := bytes.NewBuffer(nil)
 	var values []Range[dataT]
-	for i := range cases {
+	for i := range cases { //nolint
 		values = values[:0]
 		c := cases[i]
 		err := ParseMultiRange(c.c,
@@ -405,7 +405,7 @@ func testCombineMerge(t *testing.T) {
 	}
 }
 
-func testCombineExclude(t *testing.T) {
+func testCombineExclude(t *testing.T) { //nolint
 	type dataT = uint8
 
 	cases := []struct {
@@ -456,7 +456,7 @@ func testCombineExclude(t *testing.T) {
 	}
 	buf := bytes.NewBuffer(nil)
 	var values []Range[dataT]
-	for i := range cases {
+	for i := range cases { //nolint
 		values = values[:0]
 		c := cases[i]
 		err := ParseMultiRange(c.c,

@@ -151,10 +151,10 @@ func (b *intsBound[T, Tag]) AsIncluded() Bound[T] {
 	if v, ex := b.GetValue(); ex {
 		ok := false
 		if b.Is(Lower{}) {
-			v += 1
+			v += 1 //nolint
 			ok = v > b.Value
 		} else {
-			v -= 1
+			v -= 1 //nolint
 			ok = v < b.Value
 		}
 		if ok {
@@ -170,10 +170,10 @@ func (b *intsBound[T, Tag]) AsExcluded() Bound[T] {
 	if v, ex := b.GetValue(); !ex {
 		ok := false
 		if b.Is(Lower{}) {
-			v -= 1
+			v -= 1 //nolint
 			ok = v < b.Value
 		} else {
-			v += 1
+			v += 1 //nolint
 			ok = v > b.Value
 		}
 		if ok {

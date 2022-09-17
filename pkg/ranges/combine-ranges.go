@@ -4,13 +4,18 @@ import (
 	"sort"
 )
 
+//CombineStrategy combine strategy ID
 type CombineStrategy = uint8
 
 const (
+	//CombineMerge merge strategy
 	CombineMerge CombineStrategy = iota
+
+	//CombineExclude exclude strategy
 	CombineExclude
 )
 
+//CombineRanges combines set of ganges with one of strategy
 func CombineRanges[T any](
 	rangeConstructor func(l, u Bound[T]) Range[T],
 	consume func(Range[T]) bool,

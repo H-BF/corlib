@@ -4,6 +4,7 @@ import (
 	"reflect"
 )
 
+//IntsFactory 'integers' class ranges factory constructor
 func IntsFactory[T Ints](_ T) Factory[T] {
 	return intsFactory[T]{}
 }

@@ -9,11 +9,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+//Ints integers class for integers ranges
 type Ints interface {
 	uint8 | uint16 | uint32 | uint64 | uint |
 		int8 | int16 | int32 | int64 | int
 }
 
+//ParseSources parse range source constraint
 type ParseSources interface {
 	~string | ~[]byte
 }
@@ -24,11 +26,11 @@ type intsRange[T Ints] struct {
 }
 
 var (
-	//ParseError ...
-	ParseError = errors.New("parse error")
+	//ErrParse ...
+	ErrParse = errors.New("ranges parser error")
 
-	//SourceMatchError ...
-	SourceMatchError = errors.New("source doesn't match to 'ranges'")
+	//ErrSourceMatch ...
+	ErrSourceMatch = errors.New("source doesn't match to any range")
 )
 
 var (
@@ -111,6 +113,7 @@ func (i *intsRange[T]) IsNull() bool {
 	return true
 }
 
+//ParseIntsRange parse 'ints' class range from string
 func ParseIntsRange[T Ints, S ParseSources](in S, result *Range[T]) error {
 	const (
 		msgUnexpected = "unexpected behaviour reached"
@@ -122,7 +125,7 @@ func ParseIntsRange[T Ints, S ParseSources](in S, result *Range[T]) error {
 
 	re := intsRangeRe.FindSubmatchIndex(source)
 	if len(re) == 0 {
-		return SourceMatchError
+		return ErrSourceMatch
 	}
 
 	b := bytes.NewBuffer(nil)
@@ -137,7 +140,7 @@ func ParseIntsRange[T Ints, S ParseSources](in S, result *Range[T]) error {
 	_, err := fmt.Fscanf(b, "%c%v,%v%c",
 		&ex1, &l, &u, &ex2)
 	if err != nil {
-		return errors.WithMessagef(ParseError, "wnen scan values: %s", err)
+		return errors.WithMessagef(ErrParse, "wnen scan values: %s", err)
 	}
 
 	switch ex1 {
