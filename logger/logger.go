@@ -51,10 +51,10 @@ func NewWithSink(level LevelEnabler, sink io.Writer, options ...zap.Option) Type
 				zapcore.NewJSONEncoder(zapcore.EncoderConfig{
 					TimeKey:        "ts",
 					LevelKey:       "lvl",
-					NameKey:        "logger",
-					CallerKey:      "from",
-					MessageKey:     "message",
-					StacktraceKey:  "stacktrace",
+					NameKey:        "log-of",
+					CallerKey:      "at",
+					MessageKey:     "msg",
+					StacktraceKey:  "stack",
 					LineEnding:     zapcore.DefaultLineEnding,
 					EncodeLevel:    zapcore.LowercaseLevelEncoder,
 					EncodeTime:     zapcore.ISO8601TimeEncoder,
@@ -67,6 +67,20 @@ func NewWithSink(level LevelEnabler, sink io.Writer, options ...zap.Option) Type
 			options...,
 		).Sugar(),
 	}
+}
+
+// Named ...
+func (lg TypeOfLogger) Named(n string) TypeOfLogger {
+	ret := lg
+	ret.SugaredLogger = lg.SugaredLogger.Named(n)
+	return ret
+}
+
+// WithField adds additional field
+func (lg TypeOfLogger) WithField(k, v interface{}) TypeOfLogger {
+	ret := lg
+	ret.SugaredLogger = lg.SugaredLogger.With(k, v)
+	return ret
 }
 
 // Level returns current global logger level

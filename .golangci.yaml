@@ -12,6 +12,9 @@ run:
     - \.pb\.go$
     - \.pb\.goclay\.go$
 
+
+go: '1.18'
+
 output:
   format: colored-line-number
   print-issued-lines: true
@@ -50,9 +53,11 @@ linters:
     - nakedret
     - misspell
     - tagliatelle
+    - staticcheck
+    - gosimple
     #- gofmt
     # - goimports - your IDE should do this automatically as 'On save' action anyways
-    - megacheck # (staticcheck + gosimple + unused in one linter)
+    #- megacheck # (staticcheck + gosimple + unused in one linter)
 
 issues:
   exclude-use-default: false
