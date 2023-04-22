@@ -136,7 +136,7 @@ func TestPrometheusServerMetrics(t *testing.T) {
 	if !assert.NotNil(t, resp.Body) {
 		return
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:gosec
 	var payload []byte
 	payload, err = ioutil.ReadAll(resp.Body)
 	if !assert.NoError(t, err) {

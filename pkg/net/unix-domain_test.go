@@ -16,7 +16,7 @@ func TestFindUnixSocketFromURI(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer listener.Close()
+	defer listener.Close() //nolint:gosec
 	uri := string(SchemeUnixHTTP) + "://" + path.Join(sockPath, "p1", "p2", "p3") + "?v1=100&v2=200"
 	parsed := findUnixSocketFromURI(uri)
 	assert.Equal(t, sockPath, parsed)
@@ -28,7 +28,7 @@ func TestUnixSocketRoundTrip(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer listener.Close()
+	defer listener.Close() //nolint:gosec
 
 	m := chi.NewMux()
 	uri := "/simple/get"

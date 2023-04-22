@@ -61,7 +61,7 @@ func Test_ListenFailWhenAnotherOneListensItToo(t *testing.T) {
 	if !assert.NoError(t, err) {
 		return
 	}
-	defer l0.Close()
+	defer l0.Close() //nolint:gosec
 	newName := name + "-1"
 	err = syscall.Rename(name, newName)
 	if !assert.NoError(t, err) {

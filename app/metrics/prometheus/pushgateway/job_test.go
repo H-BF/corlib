@@ -109,7 +109,7 @@ func Test_PushGatewayJob(t *testing.T) {
 			if !assert.NoError(t2, err) {
 				return
 			}
-			defer lst.Close()
+			defer lst.Close() //nolint:gosec
 
 			var gotMethod string
 			srv := http.Server{
