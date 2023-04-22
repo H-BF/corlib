@@ -16,26 +16,24 @@ jobs:
     steps:
       - name: git clone
         uses: actions/checkout@v2
+        
       - uses: actions/setup-go@v2
         with:
           go-version: 1.18
 
-      - name: Run tests
-        run: |
-          go version
-          make test
+      - name: Check deps
+        run: make go-deps
 
-      - name: Run cover profile
-        run: |
-          go test -coverprofile=cover.txt ./...
-          go tool cover -html=cover.txt -o cover.html
+      - name: Check linter issues
+        run: make lint
+
+      - name: Run tests
+        run: make test          
 
       - name: Upload cover files
         uses: actions/upload-artifact@v2
         with:
-          name: cover_text_html
+          name: cover_tests_report
           path: cover.*t*
           retention-days: 14
 
-      - name: Run linter
-        run: make lint
