@@ -18,6 +18,9 @@ const (
 
 	//RemoteHostnameHeader -
 	RemoteHostnameHeader = "hostname"
+
+	//UserAgentHeaderNoVer - because [UserAgentHeader] contains grpc version as "foo grpc-go/1.53.0"
+	UserAgentHeaderNoVer = "user-agent-no-ver"
 )
 
 const (

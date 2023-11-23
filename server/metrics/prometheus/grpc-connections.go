@@ -107,6 +107,6 @@ func (met *connMetric) HandleRPC(_ context.Context, stat stats.RPCStats) {
 }
 
 var label2header = map[string]string{
-	LabelUserAgent:      conventions.UserAgentHeader,
+	LabelUserAgent:      conventions.UserAgentHeaderNoVer,
 	LabelRemoteHostname: conventions.RemoteHostnameHeader,
 }
