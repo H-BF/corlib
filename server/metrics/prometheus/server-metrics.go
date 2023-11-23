@@ -30,13 +30,15 @@ type (
 )
 
 const ( //possible metrics labels
-	LabelLocalAddr  string = "local_address"  //nolint
-	LabelRemoteAddr        = "remote_address" //nolint
-	LabelClientName        = "client_name"    //nolint
-	LabelService           = "service"        //nolint
-	LabelMethod            = "method"         //nolint
-	LabelState             = "state"          //nolint
-	LabelGRPCCode          = "grpc_code"      //nolint
+	LabelLocalAddr      string = "local_address"    //nolint
+	LabelRemoteAddr            = "remote_address"   //nolint
+	LabelClientName            = "client_name"      //nolint
+	LabelService               = "service"          //nolint
+	LabelMethod                = "method"           //nolint
+	LabelState                 = "state"            //nolint
+	LabelGRPCCode              = "grpc_code"        //nolint
+	LabelUserAgent             = "user_agent"       //nolint
+	LabelRemoteHostname        = "remote_host_name" //nolint
 )
 
 const ( //label values

@@ -15,6 +15,9 @@ const (
 const (
 	//UserAgentHeader web requests
 	UserAgentHeader = "user-agent"
+
+	//RemoteHostnameHeader -
+	RemoteHostnameHeader = "hostname"
 )
 
 const (
