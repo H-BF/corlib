@@ -30,26 +30,24 @@ type (
 )
 
 const ( //possible metrics labels
-	LabelLocalAddr      string = "local_address"    //nolint
-	LabelRemoteAddr            = "remote_address"   //nolint
-	LabelClientName            = "client_name"      //nolint
-	LabelService               = "service"          //nolint
-	LabelMethod                = "method"           //nolint
-	LabelState                 = "state"            //nolint
-	LabelGRPCCode              = "grpc_code"        //nolint
-	LabelUserAgent             = "user_agent"       //nolint
-	LabelRemoteHostname        = "remote_host_name" //nolint
+	LabelLocalAddr  = "local_address"  //nolint
+	LabelRemoteAddr = "remote_address" //nolint
+	LabelClientName = "client_name"    //nolint
+	LabelService    = "service"        //nolint
+	LabelMethod     = "method"         //nolint
+	LabelState      = "state"          //nolint
+	LabelGRPCCode   = "grpc_code"      //nolint
 )
 
 const ( //label values
-	Started  string = "started"  //nolint
-	Finished        = "finished" //nolint
-	Received        = "received" //nolint
-	Sent            = "sent"     //nolint
+	Started  = "started"  //nolint
+	Finished = "finished" //nolint
+	Received = "received" //nolint
+	Sent     = "sent"     //nolint
 )
 
 const (
-	DefaultNamespace = "sbr"         //nolint
+	DefaultNamespace = "sys"         //nolint
 	DefaultSubsystem = "grpc_server" //nolint
 )
 
@@ -58,7 +56,7 @@ var (
 	_ Option               = (serverMetricsOptionApplier)(nil)
 )
 
-//NewMetrics ...
+// NewMetrics ...
 func NewMetrics(opts ...Option) *ServerMetrics {
 	options := serverMetricsOptions{
 		Namespace: DefaultNamespace,
@@ -89,12 +87,12 @@ func NewMetrics(opts ...Option) *ServerMetrics {
 	return ret
 }
 
-//PanicsObserver observer panics
+// PanicsObserver observer panics
 func (pMetrics *ServerMetrics) PanicsObserver() interceptors.OnPanicEventObserver {
 	return pMetrics.panicsObserver
 }
 
-//StatHandlers ...
+// StatHandlers ...
 func (pMetrics *ServerMetrics) StatHandlers() []interceptors.StatsHandler {
 	var ret []interceptors.StatsHandler
 	for _, coll := range pMetrics.collectors {
@@ -105,21 +103,21 @@ func (pMetrics *ServerMetrics) StatHandlers() []interceptors.StatsHandler {
 	return ret
 }
 
-//Describe impl prometheus.Collector
+// Describe impl prometheus.Collector
 func (pMetrics *ServerMetrics) Describe(c chan<- *prometheus.Desc) {
 	for _, coll := range pMetrics.collectors {
 		coll.Describe(c)
 	}
 }
 
-//Collect impl prometheus.Collector
+// Collect impl prometheus.Collector
 func (pMetrics *ServerMetrics) Collect(c chan<- prometheus.Metric) {
 	for _, coll := range pMetrics.collectors {
 		coll.Collect(c)
 	}
 }
 
-//WithNamespace sets Namespace to metrics
+// WithNamespace sets Namespace to metrics
 func WithNamespace(ns string) Option {
 	var ret serverMetricsOptionApplier = func(options *serverMetricsOptions) {
 		options.Namespace = ns
@@ -127,7 +125,7 @@ func WithNamespace(ns string) Option {
 	return ret
 }
 
-//WithSubsystem  sets Subsystem to metrics
+// WithSubsystem  sets Subsystem to metrics
 func WithSubsystem(ss string) Option {
 	var ret serverMetricsOptionApplier = func(options *serverMetricsOptions) {
 		options.Subsystem = ss

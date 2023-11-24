@@ -4,23 +4,21 @@ import (
 	"context"
 	"strings"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc/metadata"
 )
 
 const (
 	//SysHeaderPrefix common of system GRPC metadata and HTTP headers
-	SysHeaderPrefix = "x-sbr-"
+	SysHeaderPrefix = "x-sys-"
 )
 
 const (
-	//UserAgentHeader web requests
+	// UserAgentHeader web requests
 	UserAgentHeader = "user-agent"
 
-	//RemoteHostnameHeader -
-	RemoteHostnameHeader = "hostname"
-
-	//UserAgentHeaderNoVer - because [UserAgentHeader] contains grpc version as "foo grpc-go/1.53.0"
-	UserAgentHeaderNoVer = "user-agent-no-ver"
+	// HostNameHeader remote host name going from grpc-client
+	HostNameHeader = "host-name"
 )
 
 const (
@@ -34,10 +32,10 @@ const (
 	AppVersionHeader = SysHeaderPrefix + "app-ver"
 )
 
-//ClientName user agent extractor
+// ClientName user agent extractor
 var ClientName clientNameExtractor
 
-//Incoming extracts user agent from incoming context
+// Incoming extracts user agent from incoming context
 func (a clientNameExtractor) Incoming(ctx context.Context, defVal string) string {
 	if ret, ok := a.extractClientName(ctx, a.mdIncoming); ok {
 		return ret
@@ -45,7 +43,7 @@ func (a clientNameExtractor) Incoming(ctx context.Context, defVal string) string
 	return defVal
 }
 
-//Outgoing extracts user agent from outgoing context
+// Outgoing extracts user agent from outgoing context
 func (a clientNameExtractor) Outgoing(ctx context.Context, defVal string) string {
 	if ret, ok := a.extractClientName(ctx, a.mdOutgoing); ok {
 		return ret
@@ -70,24 +68,56 @@ func (clientNameExtractor) mdOutgoing(ctx context.Context) metadata.MD {
 }
 
 func (clientNameExtractor) extractClientName(ctx context.Context, mdExtractor func(ctx context.Context) metadata.MD) (string, bool) {
-	var (
-		res string
-		ok  bool
-	)
 	if md := mdExtractor(ctx); md != nil {
-		for _, k := range []string{AppNameHeader, UserAgentHeader} {
-			if v := md[k]; len(v) > 0 {
-				res, ok = v[0], true
-				break
+		ff := [...]func(metadata.MD, string) string{
+			GetAppName, GetUserAgent,
+		}
+		for _, f := range ff {
+			if v := f(md, ""); v != "" {
+				return v, true
 			}
 		}
 	}
-	const suffix = "grpc-go/"
-	if ok && len(res) > 0 {
-		n := strings.Index(res, suffix)
-		if n > 0 {
-			res = strings.TrimRight(res[:n], " ")
+	return "", false
+}
+
+// GetAppName -
+func GetAppName(md metadata.MD, defVal string) string {
+	return getAnyFromMD(md, defVal, AppNameHeader)
+}
+
+// GetUserAgent -
+func GetUserAgent(md metadata.MD, defVal string) string {
+	return getAnyFromMD(md, defVal, runtime.MetadataPrefix+UserAgentHeader, UserAgentHeader)
+}
+
+// GetHostName -
+func GetHostName(md metadata.MD, defVal string) string {
+	return getAnyFromMD(md, defVal, HostNameHeader)
+}
+
+func getAnyFromMD(md metadata.MD, defVal string, keys ...string) string {
+	var s string
+	var k string
+	for _, k = range keys {
+		if data := md.Get(k); len(data) > 0 {
+			s = data[0]
+			break
 		}
 	}
-	return res, ok
+	if strings.HasSuffix(k, UserAgentHeader) {
+		s = removeGrpcGoPrefixAndVersion(s)
+	}
+	if s == "" {
+		return defVal
+	}
+	return s
+}
+
+func removeGrpcGoPrefixAndVersion(s string) string {
+	const suffix = "grpc-go/" //мерзотный суффикс
+	if n := strings.Index(s, suffix); n >= 0 {
+		return strings.TrimRight(s[:n], " ")
+	}
+	return s
 }

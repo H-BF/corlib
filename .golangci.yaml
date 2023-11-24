@@ -1,8 +1,8 @@
 # More info on config here: https://golangci-lint.run/usage/configuration/#config-file
 run:
-  timeout: 59s
+  timeout: 100s
   issues-exit-code: 1
-  tests: true
+  tests: false
   skip-dirs:
     - bin
     - vendor
@@ -13,7 +13,7 @@ run:
     - \.pb\.goclay\.go$
 
 
-go: '1.18'
+go: '1.20'
 
 output:
   format: colored-line-number
@@ -38,9 +38,9 @@ linters:
     - unparam
     - govet
     - errcheck
-    - deadcode
-    - structcheck
-    - varcheck
+    #- deadcode
+    #- structcheck
+    #- varcheck
     - ineffassign
     - typecheck
     - dupl

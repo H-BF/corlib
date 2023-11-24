@@ -94,8 +94,11 @@ func (ass *runAPIServersAssistant) constructProxyConn(ctx context.Context, ep *p
 	ret, err := grpc.DialContext(
 		ctx,
 		endpointAddr,
+		grpc.WithUserAgent("grpc-api-gw"),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(opts...)),
+		grpc.WithChainUnaryInterceptor(
+			grpc_retry.UnaryClientInterceptor(opts...),
+		),
 	)
 	if err == nil {
 		rt.SetFinalizer(ret, func(o *grpc.ClientConn) {
@@ -136,9 +139,16 @@ func (ass *runAPIServersAssistant) construct(runner *runAPIServersOptions) error
 				for k, values := range h {
 					doSet := len(k) >= len(conventions.SysHeaderPrefix) &&
 						strings.EqualFold(k[:n], conventions.SysHeaderPrefix)
+					/*//TODO: Remove this
 					if !doSet {
-						doSet = strings.EqualFold(k, conventions.UserAgentHeader)
+						headers := [...]string{
+							conventions.UserAgentHeader, conventions.HostNameHeader,
+						}
+						for i := 0; !doSet && i < len(headers); i++ {
+							doSet = strings.EqualFold(k, headers[i])
+						}
 					}
+					*/
 					if doSet {
 						md.Set(k, values...)
 					}
