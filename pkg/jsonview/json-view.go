@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -17,17 +18,17 @@ type (
 	marshaler func() ([]byte, error)
 )
 
-//String ...
+// String ...
 func (s *stringer) String() string {
 	return String(s.d)
 }
 
-//MarshalJSON ...
+// MarshalJSON ...
 func (f marshaler) MarshalJSON() ([]byte, error) {
 	return f()
 }
 
-//String ...
+// String ...
 func String(d interface{}) string {
 	switch t := d.(type) {
 	case nil:
@@ -46,12 +47,12 @@ func String(d interface{}) string {
 	return string(b)
 }
 
-//Stringer ...
+// Stringer ...
 func Stringer(d interface{}) fmt.Stringer {
 	return &stringer{d: d}
 }
 
-//Marshaler ...
+// Marshaler ...
 func Marshaler(d interface{}) json.Marshaler {
 	switch t := d.(type) {
 	case nil:
@@ -59,29 +60,36 @@ func Marshaler(d interface{}) json.Marshaler {
 	case json.Marshaler:
 		return t
 	case error:
-		return marshaler(func() ([]byte, error) {
-			b := bytes.NewBuffer(nil)
-			_, e := fmt.Fprintf(b, "%q", t)
-			return b.Bytes(), e
-		})
+		return quoteMarshaler(t.Error())
 	case proto.Message:
 		return marshaler(func() ([]byte, error) {
 			return protojson.MarshalOptions{AllowPartial: true}.Marshal(t)
 		})
+	case net.Addr:
+		switch addr := t.(type) {
+		case *net.TCPAddr:
+			return quoteMarshaler(addr.IP.String())
+		case *net.UnixAddr:
+			return marshaler(func() ([]byte, error) {
+				return []byte("\"unix-socket\""), nil
+			})
+		default:
+			return quoteMarshaler(addr.String())
+		}
 	case fmt.Stringer:
-		return marshaler(func() ([]byte, error) {
-			b := bytes.NewBuffer(nil)
-			_, e := fmt.Fprintf(b, "%q", t)
-			return b.Bytes(), e
-		})
+		return quoteMarshaler(t.String())
 	case fmt.GoStringer:
-		return marshaler(func() ([]byte, error) {
-			b := bytes.NewBuffer(nil)
-			_, e := fmt.Fprintf(b, "%q", fmt.Sprintf("%#v", t))
-			return b.Bytes(), e
-		})
+		return quoteMarshaler(fmt.Sprintf("%#v", t))
 	}
 	return marshaler(func() ([]byte, error) {
 		return json.Marshal(d)
+	})
+}
+
+func quoteMarshaler(value string) marshaler {
+	return marshaler(func() ([]byte, error) {
+		b := bytes.NewBuffer(nil)
+		_, e := fmt.Fprintf(b, "%q", value)
+		return b.Bytes(), e
 	})
 }

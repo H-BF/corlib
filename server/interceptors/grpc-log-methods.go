@@ -9,11 +9,13 @@ import (
 	"github.com/H-BF/corlib/pkg/jsonview"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/peer"
 )
 
 type (
 	logCallMethods struct{}
 	represent2log  struct {
+		SourceIP interface{} `json:"src_ip"`
 		Service  string      `json:"service"`
 		Method   string      `json:"method"`
 		Duration interface{} `json:"duration"`
@@ -23,10 +25,10 @@ type (
 	}
 )
 
-//LogServerAPI ...
+// LogServerAPI ...
 var LogServerAPI logCallMethods
 
-//Unary ...
+// Unary ...
 func (logCallMethods) Unary(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	timePoint := time.Now()
 	resp, err := handler(ctx, req)
@@ -44,6 +46,9 @@ func (logCallMethods) Unary(ctx context.Context, req interface{}, info *grpc.Una
 				Duration: jsonview.Marshaler(time.Since(timePoint)),
 				Req:      jsonview.Marshaler(req),
 			}
+			if peer, ok := peer.FromContext(ctx); ok {
+				rep.SourceIP = jsonview.Marshaler(peer.Addr)
+			}
 			const (
 				msg     = "Unary/SERVER-API"
 				details = "details"
@@ -60,7 +65,7 @@ func (logCallMethods) Unary(ctx context.Context, req interface{}, info *grpc.Una
 	return resp, err
 }
 
-//Stream ...
+// Stream ...
 func (logCallMethods) Stream(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	timePoint := time.Now()
 	ctx := ss.Context()
@@ -77,6 +82,9 @@ func (logCallMethods) Stream(srv interface{}, ss grpc.ServerStream, info *grpc.S
 				Service:  mi.ServiceFQN,
 				Method:   mi.Method,
 				Duration: jsonview.Marshaler(time.Since(timePoint)),
+			}
+			if peer, ok := peer.FromContext(ctx); ok {
+				rep.SourceIP = jsonview.Marshaler(peer.Addr)
 			}
 			const (
 				msg     = "Stream/SERVER-API"
