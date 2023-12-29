@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -60,36 +59,29 @@ func Marshaler(d interface{}) json.Marshaler {
 	case json.Marshaler:
 		return t
 	case error:
-		return quoteMarshaler(t.Error())
+		return marshaler(func() ([]byte, error) {
+			b := bytes.NewBuffer(nil)
+			_, e := fmt.Fprintf(b, "%q", t)
+			return b.Bytes(), e
+		})
 	case proto.Message:
 		return marshaler(func() ([]byte, error) {
 			return protojson.MarshalOptions{AllowPartial: true}.Marshal(t)
 		})
-	case net.Addr:
-		switch addr := t.(type) {
-		case *net.TCPAddr:
-			return quoteMarshaler(addr.IP.String())
-		case *net.UnixAddr:
-			return marshaler(func() ([]byte, error) {
-				return []byte("\"unix-socket\""), nil
-			})
-		default:
-			return quoteMarshaler(addr.String())
-		}
 	case fmt.Stringer:
-		return quoteMarshaler(t.String())
+		return marshaler(func() ([]byte, error) {
+			b := bytes.NewBuffer(nil)
+			_, e := fmt.Fprintf(b, "%q", t)
+			return b.Bytes(), e
+		})
 	case fmt.GoStringer:
-		return quoteMarshaler(fmt.Sprintf("%#v", t))
+		return marshaler(func() ([]byte, error) {
+			b := bytes.NewBuffer(nil)
+			_, e := fmt.Fprintf(b, "%q", fmt.Sprintf("%#v", t))
+			return b.Bytes(), e
+		})
 	}
 	return marshaler(func() ([]byte, error) {
 		return json.Marshal(d)
-	})
-}
-
-func quoteMarshaler(value string) marshaler {
-	return marshaler(func() ([]byte, error) {
-		b := bytes.NewBuffer(nil)
-		_, e := fmt.Fprintf(b, "%q", value)
-		return b.Bytes(), e
 	})
 }
