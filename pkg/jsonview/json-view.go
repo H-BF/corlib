@@ -17,17 +17,17 @@ type (
 	marshaler func() ([]byte, error)
 )
 
-//String ...
+// String ...
 func (s *stringer) String() string {
 	return String(s.d)
 }
 
-//MarshalJSON ...
+// MarshalJSON ...
 func (f marshaler) MarshalJSON() ([]byte, error) {
 	return f()
 }
 
-//String ...
+// String ...
 func String(d interface{}) string {
 	switch t := d.(type) {
 	case nil:
@@ -46,12 +46,12 @@ func String(d interface{}) string {
 	return string(b)
 }
 
-//Stringer ...
+// Stringer ...
 func Stringer(d interface{}) fmt.Stringer {
 	return &stringer{d: d}
 }
 
-//Marshaler ...
+// Marshaler ...
 func Marshaler(d interface{}) json.Marshaler {
 	switch t := d.(type) {
 	case nil:

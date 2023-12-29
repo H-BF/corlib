@@ -2,6 +2,7 @@ package interceptors
 
 import (
 	"context"
+	"net"
 	"time"
 
 	"github.com/H-BF/corlib/logger"
@@ -9,6 +10,7 @@ import (
 	"github.com/H-BF/corlib/pkg/jsonview"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/peer"
 )
 
 type (
@@ -16,18 +18,19 @@ type (
 	represent2log  struct {
 		Service  string      `json:"service"`
 		Method   string      `json:"method"`
-		Duration interface{} `json:"duration"`
+		Duration interface{} `json:"duration,omitempty"`
 		Req      interface{} `json:"req,omitempty"`
 		Resp     interface{} `json:"resp,omitempty"`
 		Error    interface{} `json:"err,omitempty"`
+		RemoteIP interface{} `json:"remote_ip,omitempty"` //nolint:tagliatelle
 	}
 )
 
-//LogServerAPI ...
+// LogServerAPI ...
 var LogServerAPI logCallMethods
 
-//Unary ...
-func (logCallMethods) Unary(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+// Unary ...
+func (lm logCallMethods) Unary(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	timePoint := time.Now()
 	resp, err := handler(ctx, req)
 	log := logger.FromContext(ctx)
@@ -43,6 +46,9 @@ func (logCallMethods) Unary(ctx context.Context, req interface{}, info *grpc.Una
 				Method:   mi.Method,
 				Duration: jsonview.Marshaler(time.Since(timePoint)),
 				Req:      jsonview.Marshaler(req),
+			}
+			if ip := lm.remoteIP(ctx); ip != nil {
+				rep.RemoteIP = ip.String()
 			}
 			const (
 				msg     = "Unary/SERVER-API"
@@ -60,8 +66,8 @@ func (logCallMethods) Unary(ctx context.Context, req interface{}, info *grpc.Una
 	return resp, err
 }
 
-//Stream ...
-func (logCallMethods) Stream(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+// Stream ...
+func (lm logCallMethods) Stream(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	timePoint := time.Now()
 	ctx := ss.Context()
 	err := handler(srv, ss)
@@ -78,6 +84,9 @@ func (logCallMethods) Stream(srv interface{}, ss grpc.ServerStream, info *grpc.S
 				Method:   mi.Method,
 				Duration: jsonview.Marshaler(time.Since(timePoint)),
 			}
+			if ip := lm.remoteIP(ctx); ip != nil {
+				rep.RemoteIP = ip.String()
+			}
 			const (
 				msg     = "Stream/SERVER-API"
 				details = "details"
@@ -91,4 +100,14 @@ func (logCallMethods) Stream(srv interface{}, ss grpc.ServerStream, info *grpc.S
 		}
 	}
 	return err
+}
+
+func (logCallMethods) remoteIP(ctx context.Context) net.IP {
+	if peer, _ := peer.FromContext(ctx); peer != nil {
+		ipa, _ := peer.Addr.(*net.TCPAddr)
+		if ipa != nil {
+			return ipa.IP
+		}
+	}
+	return nil
 }
