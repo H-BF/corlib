@@ -22,7 +22,7 @@ type (
 		Req      interface{} `json:"req,omitempty"`
 		Resp     interface{} `json:"resp,omitempty"`
 		Error    interface{} `json:"err,omitempty"`
-		RemoteIP interface{} `json:"remote_ip,omitempty"`
+		RemoteIP interface{} `json:"remote_ip,omitempty"` //nolint:tagliatelle
 	}
 )
 
