@@ -11,7 +11,7 @@ type SwaggerComposer struct{}
 // Compose ...
 func (composer SwaggerComposer) Compose(primary *spec.Swagger, mixins ...*spec.Swagger) error {
 	const api = "swagger.Compose"
-	opIds := composer.getOpIds(primary)
+	opIDs := composer.getOpIDs(primary)
 	for _, m := range mixins {
 		primary.Tags = append(primary.Tags, m.Tags...)
 		for k, v := range m.Definitions {
@@ -32,10 +32,10 @@ func (composer SwaggerComposer) Compose(primary *spec.Swagger, mixins ...*spec.S
 			// all the proivded specs are already unique.
 			piops := composer.pathItemOps(v)
 			for _, piop := range piops {
-				if opIds[piop.ID] {
+				if opIDs[piop.ID] {
 					return errors.Errorf("%s: operation[%s] is douplicated", api, piop.ID)
 				}
-				opIds[piop.ID] = true
+				opIDs[piop.ID] = true
 			}
 			primary.Paths.Paths[k] = v
 		}
@@ -98,9 +98,9 @@ func (composer SwaggerComposer) fixEmptyDesc(rs *spec.Response) {
 	rs.Description = "(empty)"
 }
 
-// getOpIds extracts all the paths.<path>.operationIds from the given
+// getOpIDs extracts all the paths.<path>.operationIds from the given
 // spec and returns them as the keys in a map with 'true' values.
-func (composer SwaggerComposer) getOpIds(s *spec.Swagger) map[string]bool {
+func (composer SwaggerComposer) getOpIDs(s *spec.Swagger) map[string]bool {
 	rv := make(map[string]bool)
 	for _, v := range s.Paths.Paths {
 		for _, op := range composer.pathItemOps(v) {

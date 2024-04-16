@@ -14,7 +14,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
-//ErrUnknownExporterKind unknown exporter kind
+// ErrUnknownExporterKind unknown exporter kind
 var ErrUnknownExporterKind = errors.New("unknown exporter kind")
 
 type (
@@ -45,7 +45,7 @@ type (
 	}
 )
 
-//NewExporter makes new instance of trace.SpanExporter
+// NewExporter makes new instance of trace.SpanExporter
 func NewExporter(_ context.Context, kindOf ExporterKindOf) (trace.SpanExporter, error) {
 	const api = "ot.NewExporter"
 	var (
@@ -80,6 +80,7 @@ func NewExporter(_ context.Context, kindOf ExporterKindOf) (trace.SpanExporter, 
 		httpClient := retryablehttp.NewClient()
 		httpClient.Logger = nil
 		httpClient.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+			_ = numTries
 			if resp != nil && resp.Body != nil {
 				_ = resp.Body.Close()
 			}

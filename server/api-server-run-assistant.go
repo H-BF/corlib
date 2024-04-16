@@ -134,6 +134,7 @@ func (ass *runAPIServersAssistant) construct(runner *runAPIServersOptions) error
 				grpcOpts = append(grpcOpts, grpc.InTapHandle(interceptors.TapInHandleChain(server.grpcTapHandlers).TapInHandle))
 			}
 			gwOpts = append(gwOpts, runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
+				_ = ctx
 				md, n, h := metadata.MD{}, len(conventions.SysHeaderPrefix), request.Header
 				otPriv.TextMapCarrierFromGrpcMD{MD: md}.FillFromHTTPHeader(request.Header)
 				for k, values := range h {
