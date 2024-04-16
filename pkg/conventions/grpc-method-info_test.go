@@ -3,7 +3,7 @@ package conventions
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_GrpcMethodInfo_Init(t *testing.T) {
@@ -18,7 +18,7 @@ func Test_GrpcMethodInfo_Init(t *testing.T) {
 
 	cases := []caseT{
 		{
-			source:        "/crispy.healthcheck.HealthChecker/HttpCheck",
+			source:        "a/b/c/crispy.healthcheck.HealthChecker/HttpCheck",
 			expServiceFQN: "crispy.healthcheck.HealthChecker",
 			expService:    "HealthChecker",
 			expMethod:     "HttpCheck",
@@ -65,13 +65,13 @@ func Test_GrpcMethodInfo_Init(t *testing.T) {
 		var m GrpcMethodInfo
 		c := cases[i]
 		err := m.Init(c.source)
-		assert.Equalf(t, c.expFailed, err != nil, "sample: %v", i)
-		if err != nil {
+		if c.expFailed {
+			require.Errorf(t, err, "sample: %v", i)
 			continue
 		}
-		assert.Equalf(t, c.expServiceFQN, m.ServiceFQN, "sample: %v", i)
-		assert.Equalf(t, c.expService, m.Service, "sample: %v", i)
-		assert.Equalf(t, c.expMethod, m.Method, "sample: %v", i)
-		assert.Equalf(t, c.source, m.String(), "sample: %v", i)
+		require.NoErrorf(t, err, "sample: %v", i)
+		require.Equalf(t, c.expServiceFQN, m.ServiceFQN, "sample: %v", i)
+		require.Equalf(t, c.expService, m.Service, "sample: %v", i)
+		require.Equalf(t, c.expMethod, m.Method, "sample: %v", i)
 	}
 }

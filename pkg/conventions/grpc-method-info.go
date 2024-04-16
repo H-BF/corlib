@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//GrpcMethodInfo ...
+// GrpcMethodInfo ...
 type GrpcMethodInfo struct {
 	ServiceFQN string
 	Method     string
@@ -31,12 +31,12 @@ func (m GrpcMethodInfo) String() string {
 
 type methodInfoCtxKey struct{}
 
-//WrapContext ...
+// WrapContext ...
 func (m *GrpcMethodInfo) WrapContext(ctx context.Context) context.Context {
 	return context.WithValue(ctx, methodInfoCtxKey{}, m)
 }
 
-//FromContext ...
+// FromContext ...
 func (m *GrpcMethodInfo) FromContext(ctx context.Context) bool {
 	switch v := ctx.Value(methodInfoCtxKey{}).(type) {
 	case *GrpcMethodInfo:
@@ -46,7 +46,7 @@ func (m *GrpcMethodInfo) FromContext(ctx context.Context) bool {
 	return false
 }
 
-//Init ...
+// Init ...
 func (m *GrpcMethodInfo) Init(source string) error {
 	const api = "MethodInfo.Init"
 
@@ -106,6 +106,7 @@ func (m *GrpcMethodInfo) Init(source string) error {
 var (
 	cachedGrpcMethodInfo = make(map[string]interface{})
 	grpcMethodInfoMx     sync.RWMutex
-	reMethodName         = regexp.MustCompile(`^/(\w[^/]+)/(\w+)$`)
-	reServiceName        = regexp.MustCompile(`(?:\w\.(\w+)$)|(^\w+$)`)
+	//reMethodName         = regexp.MustCompile(`^/(\w[^/]+)/(\w+)$`)
+	reMethodName  = regexp.MustCompile(`^[\S]*/(\w[^/]+)/(\w+)$`)
+	reServiceName = regexp.MustCompile(`(?:\w\.(\w+)$)|(^\w+$)`)
 )
