@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"net/http"
 
 	"github.com/H-BF/corlib/server/interceptors"
@@ -28,6 +29,7 @@ type (
 		addDefInterceptors     interceptors.DefInterceptor
 		recovery               *interceptors.Recovery
 		grpcTracer             GRPCTracer
+		tlsConf                *tls.Config
 	}
 
 	//GRPCTracer tracer
@@ -42,7 +44,7 @@ type (
 	}
 )
 
-//NewAPIServer makes new API server
+// NewAPIServer makes new API server
 func NewAPIServer(options ...APIServerOption) (*APIServer, error) {
 	const api = "NewAPIServer"
 

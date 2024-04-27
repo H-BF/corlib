@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -20,12 +21,14 @@ import (
 	"github.com/H-BF/corlib/server/interceptors"
 	"github.com/H-BF/corlib/server/internal"
 	"github.com/H-BF/corlib/server/swagger_ui"
+
 	"github.com/go-chi/chi"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pkg/errors"
 	"github.com/soheilhy/cmux"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	grpcReflection "google.golang.org/grpc/reflection"
@@ -80,7 +83,7 @@ func (ass *runAPIServersAssistant) cleanup() {
 	})
 }
 
-func (ass *runAPIServersAssistant) constructProxyConn(ctx context.Context, ep *pkgNet.Endpoint) (*grpc.ClientConn, error) {
+func (ass *runAPIServersAssistant) newGRPCproxyConn(ctx context.Context, ep *pkgNet.Endpoint, tlsConf *tls.Config) (*grpc.ClientConn, error) {
 	opts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 		grpc_retry.WithMax(100),
@@ -91,15 +94,22 @@ func (ass *runAPIServersAssistant) constructProxyConn(ctx context.Context, ep *p
 	} else {
 		endpointAddr = ep.String()
 	}
-	ret, err := grpc.DialContext(
-		ctx,
-		endpointAddr,
-		grpc.WithUserAgent("grpc-api-gw"),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	creds := insecure.NewCredentials()
+	if tlsConf != nil { //Use TLS-ed proxy
+		newConf := &tls.Config{
+			InsecureSkipVerify: true,
+			Certificates:       tlsConf.Certificates,
+		}
+		creds = credentials.NewTLS(newConf)
+	}
+	dialOpts := []grpc.DialOption{
+		grpc.WithUserAgent("grpc-proxy"),
 		grpc.WithChainUnaryInterceptor(
 			grpc_retry.UnaryClientInterceptor(opts...),
 		),
-	)
+		grpc.WithTransportCredentials(creds),
+	}
+	ret, err := grpc.DialContext(ctx, endpointAddr, dialOpts...)
 	if err == nil {
 		rt.SetFinalizer(ret, func(o *grpc.ClientConn) {
 			_ = o.Close()
@@ -133,6 +143,11 @@ func (ass *runAPIServersAssistant) construct(runner *runAPIServersOptions) error
 			if len(server.grpcTapHandlers) > 0 {
 				grpcOpts = append(grpcOpts, grpc.InTapHandle(interceptors.TapInHandleChain(server.grpcTapHandlers).TapInHandle))
 			}
+			if server.tlsConf != nil {
+				creds := credentials.NewTLS(server.tlsConf)
+				grpcOpts = append(grpcOpts, grpc.Creds(creds))
+			}
+
 			gwOpts = append(gwOpts, runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
 				_ = ctx
 				md, n, h := metadata.MD{}, len(conventions.SysHeaderPrefix), request.Header
@@ -169,7 +184,7 @@ func (ass *runAPIServersAssistant) construct(runner *runAPIServersOptions) error
 					gw = runtime.NewServeMux(gwOpts...)
 				}
 				if gwProxy == nil {
-					if gwProxy, err = ass.constructProxyConn(runner.ctx, endpoint); err != nil {
+					if gwProxy, err = ass.newGRPCproxyConn(runner.ctx, endpoint, server.tlsConf); err != nil {
 						return errors.Wrapf(err, "unable create proxy gateway conn for endpoint '%s'", endpoint)
 					}
 					ass.gwProxies[i] = gwProxy

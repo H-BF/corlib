@@ -1,6 +1,7 @@
 package server
 
 import (
+	"crypto/tls"
 	"net/http"
 	"strings"
 
@@ -120,6 +121,14 @@ func WithHttpHandler(pattern string, handler http.Handler) APIServerOption { //n
 		if len(pattern) > 1 && handler != nil {
 			srv.httpHandlers[pattern] = handler
 		}
+		return nil
+	})
+}
+
+// WithTLS add TLS to use in GRPC
+func WithTLS(cnf *tls.Config) APIServerOption {
+	return serverOptApplier(func(srv *APIServer) error {
+		srv.tlsConf = cnf
 		return nil
 	})
 }
