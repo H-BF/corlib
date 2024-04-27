@@ -97,7 +97,7 @@ func (ass *runAPIServersAssistant) newGRPCproxyConn(ctx context.Context, ep *pkg
 	creds := insecure.NewCredentials()
 	if tlsConf != nil { //Use TLS-ed proxy
 		newConf := &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, //nolint:gosec
 			Certificates:       tlsConf.Certificates,
 		}
 		creds = credentials.NewTLS(newConf)
