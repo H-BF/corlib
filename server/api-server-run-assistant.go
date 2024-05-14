@@ -31,7 +31,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
-	grpcReflection "google.golang.org/grpc/reflection"
 )
 
 type runAPIServersAssistant struct {
@@ -235,7 +234,7 @@ func (ass *runAPIServersAssistant) construct(runner *runAPIServersOptions) error
 			ass.grpcServers[i] = grpcS
 			ass.grpcListeners[i] = mx.Match(cmux.Any())
 			//mx.Match(cmux.HTTP2HeaderFieldPrefix("content-type", "application/grpc"))
-			grpcReflection.Register(grpcS)
+			addGRPCreflector(grpcS)
 		}
 	}
 	return nil

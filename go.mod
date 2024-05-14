@@ -3,7 +3,9 @@ module github.com/H-BF/corlib
 go 1.20
 
 require (
+	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/cenkalti/backoff/v4 v4.1.3
+	github.com/emirpasic/gods v1.18.1
 	github.com/go-chi/chi v1.5.4
 	github.com/go-openapi/spec v0.20.6
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -24,6 +26,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.9.0
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.22.0
+	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
 	google.golang.org/genproto v0.0.0-20220810155839-1856144b1d9c
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
