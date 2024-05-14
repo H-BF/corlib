@@ -1,10 +1,12 @@
 package dict
 
 type (
+	//HSet hash based set
 	HSet[T comparable] struct {
 		impSet[T, hDictFactory[T, struct{}]]
 	}
 
+	//RBSet is the red-black tree based set
 	RBSet[T any] struct {
 		impSet[T, rbDictFactory[T, struct{}]]
 	}

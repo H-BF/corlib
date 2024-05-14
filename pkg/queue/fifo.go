@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// FIFO interface
 type FIFO[T any] interface {
 	Reader() <-chan T
 	Put(v ...T) bool
@@ -14,7 +15,7 @@ type FIFO[T any] interface {
 }
 
 // NewFIFO -
-func NewFIFO[T any]() *typedFIFO[T] {
+func NewFIFO[T any]() *typedFIFO[T] { //nolint:revive
 	ret := &typedFIFO[T]{
 		data:    list.New(),
 		close:   make(chan struct{}),
