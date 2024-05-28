@@ -11,6 +11,7 @@ import (
 type FIFO[T any] interface {
 	Reader() <-chan T
 	Put(v ...T) bool
+	Len() int
 	Close() error
 }
 
@@ -27,6 +28,8 @@ func NewFIFO[T any]() *typedFIFO[T] { //nolint:revive
 	return ret
 }
 
+var _ FIFO[int] = (*typedFIFO[int])(nil)
+
 // typedFIFO -
 type typedFIFO[T any] struct {
 	data      *list.List
@@ -35,6 +38,16 @@ type typedFIFO[T any] struct {
 	ch        chan T
 	cv        *sync.Cond
 	closeOnce sync.Once
+}
+
+// Len -
+func (que *typedFIFO[T]) Len() int {
+	que.cv.L.Lock()
+	defer que.cv.L.Unlock()
+	if que.data != nil {
+		return que.data.Len()
+	}
+	return 0
 }
 
 // Reader -
@@ -46,16 +59,16 @@ func (que *typedFIFO[T]) Reader() <-chan T {
 func (que *typedFIFO[T]) Put(v ...T) (ok bool) {
 	que.cv.L.Lock()
 	defer func() {
-		que.cv.L.Unlock()
-		if ok && len(v) > 0 {
+		if ok {
 			que.cv.Broadcast()
 		}
+		que.cv.L.Unlock()
 	}()
 	if que.data != nil {
 		for i := range v {
 			que.data.PushBack(v[i])
 		}
-		ok = true
+		ok = len(v) > 0
 	}
 	return ok
 }
