@@ -20,7 +20,7 @@ func MakeCloseable(c grpc.ClientConnInterface) *closableConn { //nolint:revive
 		grpc.ClientConnInterface
 	}
 	if false {
-		var _ grpc.ClientConnInterface = *(*connType)(nil)
+		var _ grpc.ClientConnInterface = (*connType)(nil)
 	}
 	ret := &closableConn{c: new(atomic.Value)}
 	ret.c.Store(connType{c})
