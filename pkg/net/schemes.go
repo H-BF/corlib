@@ -4,10 +4,10 @@ import (
 	"strings"
 )
 
-//Schema ...
+// Schema ...
 type Schema string
 
-//Is check is s == another
+// Is check is s == another
 func (s Schema) Is(another interface{}) bool {
 	var s1 string
 	switch v := another.(type) {

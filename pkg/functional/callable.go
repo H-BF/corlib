@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//Callable is functional object interface
+// Callable is functional object interface
 type Callable interface {
 	Signature
 	Invoke(...interface{}) ([]interface{}, error)
@@ -14,11 +14,11 @@ type Callable interface {
 }
 
 var (
-	//ErrArgsNotMatched2Signature error when  arguments are not matched to signature
+	// ErrArgsNotMatched2Signature error when  arguments are not matched to signature
 	ErrArgsNotMatched2Signature = errors.New("arguments are not matched to signature")
 )
 
-//MustInvoke call functional object or panic if error
+// MustInvoke call functional object or panic if error
 func MustInvoke(c Callable, args ...interface{}) []interface{} {
 	r, e := c.Invoke(args...)
 	if e != nil {
@@ -27,7 +27,7 @@ func MustInvoke(c Callable, args ...interface{}) []interface{} {
 	return r
 }
 
-//MustInvokeNoResult call functional object and ignore result or panic if error
+// MustInvokeNoResult call functional object and ignore result or panic if error
 func MustInvokeNoResult(c Callable, args ...interface{}) {
 	if e := c.InvokeNoResult(args...); e != nil {
 		panic(e)
@@ -39,7 +39,7 @@ type callableImpl struct {
 	wrappedFunction reflect.Value
 }
 
-//MustCallableOf construct functional object or panic if error
+// MustCallableOf construct functional object or panic if error
 func MustCallableOf(f interface{}) Callable {
 	c, e := MayCallableOf(f)
 	if e != nil {
@@ -48,7 +48,7 @@ func MustCallableOf(f interface{}) Callable {
 	return c
 }
 
-//MayCallableOf construct functional object or return error
+// MayCallableOf construct functional object or return error
 func MayCallableOf(funcObject interface{}) (Callable, error) {
 	if c, ok := funcObject.(Callable); ok {
 		return c, nil
@@ -101,7 +101,7 @@ func (obj *callableImpl) internalInvoke(ret *[]reflect.Value, args ...interface{
 	return nil
 }
 
-//Invoke call functional object or return error
+// Invoke call functional object or return error
 func (obj *callableImpl) Invoke(args ...interface{}) ([]interface{}, error) {
 	const api = "callable/Invoke"
 	var ret []reflect.Value
@@ -118,7 +118,7 @@ func (obj *callableImpl) Invoke(args ...interface{}) ([]interface{}, error) {
 	return nil, nil
 }
 
-//InvokeNoResult call functional object and ignore result or return error
+// InvokeNoResult call functional object and ignore result or return error
 func (obj *callableImpl) InvokeNoResult(args ...interface{}) error {
 	return obj.internalInvoke(nil, args...)
 }

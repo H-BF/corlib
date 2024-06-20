@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-//NewConstIntervalScheduler creates const interval scheduler
+// NewConstIntervalScheduler creates const interval scheduler
 func NewConstIntervalScheduler(delta time.Duration) Scheduler {
 	return &constIntervalScheduler{delta: delta}
 }

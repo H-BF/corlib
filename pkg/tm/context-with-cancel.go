@@ -1,4 +1,4 @@
-package tm
+package tm //nolint:goimports,gofmt
 
 import (
 	"context"
@@ -21,6 +21,7 @@ type contextWithCancel struct {
 	cancel func()
 }
 
+// Cancel -
 func (cc *contextWithCancel) Cancel() {
 	cc.cancel()
 }

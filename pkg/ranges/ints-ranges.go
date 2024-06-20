@@ -9,13 +9,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-//Ints integers class for integers ranges
+// Ints integers class for integers ranges
 type Ints interface {
 	uint8 | uint16 | uint32 | uint64 | uint |
 		int8 | int16 | int32 | int64 | int
 }
 
-//ParseSources parse range source constraint
+// ParseSources parse range source constraint
 type ParseSources interface {
 	~string | ~[]byte
 }
@@ -113,10 +113,10 @@ func (i *intsRange[T]) IsNull() bool {
 	return true
 }
 
-//ParseIntsRange parse 'ints' class range from string
+// ParseIntsRange parse 'ints' class range from string
 func ParseIntsRange[T Ints, S ParseSources](in S, result *Range[T]) error {
 	const (
-		msgUnexpected = "unexpected behaviour reached"
+		msgUnexpected = "unexpected behavior reached"
 	)
 
 	source := reflect.ValueOf(in).Convert(

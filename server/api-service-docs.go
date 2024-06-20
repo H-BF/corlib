@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/H-BF/corlib/server/internal"
+
 	"github.com/go-openapi/spec"
 	"github.com/pkg/errors"
 )
@@ -16,7 +17,7 @@ func ComposeSwaggers(primary *SwaggerSpec, others ...*SwaggerSpec) error {
 	return internal.SwaggerComposer{}.Compose(primary, others...)
 }
 
-//CloneSwaggerSpec делаем копию SwaggerSpec
+// CloneSwaggerSpec делаем копию SwaggerSpec
 func CloneSwaggerSpec(src *SwaggerSpec) (*SwaggerSpec, error) {
 	const api = "clone Swagger spec"
 	if src == nil {

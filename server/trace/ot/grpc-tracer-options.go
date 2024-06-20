@@ -1,6 +1,6 @@
 package ot
 
-//WithTracerProvider add tracer provider
+// WithTracerProvider add tracer provider
 func WithTracerProvider(tp ServerTracerProvider) GRPCTracerOption {
 	return grpcTracerOption(func(t *GRPCTracer) {
 		t.tracerProvider = tp

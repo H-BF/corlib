@@ -19,7 +19,7 @@ var ( //errors
 	ErrBackoffStopped = errors.New("backoff is stopped")
 )
 
-//SubscribeOnAllEvents subscribe on all events
+// SubscribeOnAllEvents subscribe on all events
 func SubscribeOnAllEvents(obs observer.Observer) {
 	obs.SubscribeEvents([]observer.EventType{
 		OnJobSchedulerClose{},
@@ -32,7 +32,7 @@ func SubscribeOnAllEvents(obs observer.Observer) {
 	}...)
 }
 
-//OnJobLog info / debug log
+// OnJobLog info / debug log
 type OnJobLog struct {
 	observer.EventType `json:"-"`
 	observer.TextMessageEvent
@@ -43,27 +43,27 @@ func (evt OnJobLog) String() string {
 	return fmt.Sprintf("[%s]: %s", evt.JobID, evt.TextMessageEvent)
 }
 
-//OnJobSchedulerEnabled when job enabled
+// OnJobSchedulerEnabled when job enabled
 type OnJobSchedulerEnabled struct {
 	observer.EventType `json:"-"`
 	JobID              string
 	Enabled            bool
 }
 
-//OnJobSchedulerStarted when scheduler activates
+// OnJobSchedulerStarted when scheduler activates
 type OnJobSchedulerStarted struct {
 	observer.EventType `json:"-"`
 	JobID              string
 }
 
-//OnJobStarted subject event from PeriodicJobScheduler
+// OnJobStarted subject event from PeriodicJobScheduler
 type OnJobStarted struct {
 	observer.EventType `json:"-"`
 	JobID              string
 	At                 time.Time //UTC
 }
 
-//OnJobFinished subject event from PeriodicJobScheduler
+// OnJobFinished subject event from PeriodicJobScheduler
 type OnJobFinished struct {
 	observer.EventType `json:"-"`
 	JobResult
@@ -95,7 +95,7 @@ func (evt *OnJobFinished) setResult(jobOutput []interface{}, jobStartFailure err
 	}
 }
 
-//FindError ,..,
+// FindError ,..,
 func (evt OnJobFinished) FindError() error {
 	switch t := evt.JobResult.(type) {
 	case JobStartFailure:
@@ -108,31 +108,31 @@ func (evt OnJobFinished) FindError() error {
 	return nil
 }
 
-//OnJobSchedulerClose when scheduler is about to be closed from Close method
+// OnJobSchedulerClose when scheduler is about to be closed from Close method
 type OnJobSchedulerClose struct {
 	observer.EventType `json:"-"`
 	JobID              string
 }
 
-//OnJobSchedulerStop when jeb scheduler is about to be stopped
+// OnJobSchedulerStop when jeb scheduler is about to be stopped
 type OnJobSchedulerStop struct {
 	observer.EventType `json:"-"`
 	JobID              string
 	Reason             error
 }
 
-//JobResult ...
+// JobResult ...
 type JobResult interface {
 	isJobResult()
 }
 
-//JobStartFailure ...
+// JobStartFailure ...
 type JobStartFailure struct {
 	JobResult    `json:"-"`
 	StartFailure error `json:",omitempty"` //nolint:tagliatelle
 }
 
-//JobOutput ...
+// JobOutput ...
 type JobOutput struct {
 	JobResult `json:"-"`
 	Output    []interface{} `json:",omitempty"` //nolint:tagliatelle

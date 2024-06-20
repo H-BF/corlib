@@ -8,18 +8,19 @@ import (
 	"github.com/H-BF/corlib/pkg/backoff"
 	"github.com/H-BF/corlib/pkg/scheduler"
 	"github.com/H-BF/corlib/pkg/tm"
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/expfmt"
 )
 
-//EndpointUrlProvider gateway endpoint URL provider
+// EndpointUrlProvider gateway endpoint URL provider
 type EndpointUrlProvider = func(ctx context.Context) (string, error) //nolint:revive
 
-//TaskManagerProvider ...
+// TaskManagerProvider ...
 type TaskManagerProvider = func(ctx context.Context) tm.TaskManger
 
-//Strategy PUSH|ADD strategy
+// Strategy PUSH|ADD strategy
 type Strategy int
 
 const (
@@ -33,7 +34,7 @@ const (
 	DelStrategy
 )
 
-//Config Gateway client config
+// Config Gateway client config
 type Config struct {
 	JobName         string                 //required
 	GwEndpointURL   EndpointUrlProvider    //required
@@ -49,7 +50,7 @@ type Config struct {
 	TaskManagerProvider
 }
 
-//Validate check if config is valid
+// Validate check if config is valid
 func (c *Config) Validate() error {
 	const api = "config.Validate"
 

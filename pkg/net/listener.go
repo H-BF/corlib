@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//Listen listen net address
+// Listen listen net address
 func Listen(endpoint *Endpoint) (net.Listener, error) {
 	addr, err := endpoint.Address()
 	if err != nil {
@@ -25,7 +25,7 @@ func Listen(endpoint *Endpoint) (net.Listener, error) {
 	return nil, errors.Errorf("Listen: unsupported network '%s'", endpoint.Network())
 }
 
-//ListenUnixDomain safe listen unix domain socket
+// ListenUnixDomain safe listen unix domain socket
 func ListenUnixDomain(addr string) (net.Listener, error) {
 	const (
 		unix    = "unix"

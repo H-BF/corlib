@@ -4,7 +4,7 @@ import (
 	"reflect"
 )
 
-//IntsFactory 'integers' class ranges factory constructor
+// IntsFactory 'integers' class ranges factory constructor
 func IntsFactory[T Ints](_ T) Factory[T] {
 	return intsFactory[T]{}
 }
@@ -21,7 +21,7 @@ func (f intsFactory[T]) Bound(tag boundTagID, val T, exclude bool) Bound[T] {
 	case Lower:
 		ret = new(intsBound[T, Lower])
 	default:
-		panic("unexpected behaviour reached")
+		panic("unexpected behavior reached")
 	}
 	ret.SetValue(val, exclude)
 	return ret

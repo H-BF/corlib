@@ -1,4 +1,4 @@
-package logger
+package logger //nolint:goimports,gofmt
 
 import (
 	"go.uber.org/zap"
@@ -10,10 +10,12 @@ type coreWithLevel struct {
 	level zapcore.Level
 }
 
+// Enabled -
 func (c *coreWithLevel) Enabled(l zapcore.Level) bool {
 	return c.level.Enabled(l)
 }
 
+// Check -
 func (c *coreWithLevel) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
 	if c.Enabled(ent.Level) {
 		return ce.AddCore(ent, c)
@@ -21,6 +23,7 @@ func (c *coreWithLevel) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapc
 	return ce
 }
 
+// With -
 func (c *coreWithLevel) With(fields []zapcore.Field) zapcore.Core {
 	return &coreWithLevel{
 		c.Core.With(fields),
@@ -32,8 +35,8 @@ func (c *coreWithLevel) With(fields []zapcore.Field) zapcore.Core {
 // from an existing one with a new logging level
 //
 // Usage:
-//     logger.Logger().Desugar().WithOptions(logger.WithLevel(level)).Sugar()
 //
+//	logger.Logger().Desugar().WithOptions(logger.WithLevel(level)).Sugar()
 func WithLevel(lvl zapcore.Level) zap.Option {
 	return zap.WrapCore(func(core zapcore.Core) zapcore.Core {
 		return &coreWithLevel{core, lvl}

@@ -2,17 +2,19 @@ package server
 
 import (
 	"context"
+
 	pkgNet "github.com/H-BF/corlib/pkg/net"
 	"github.com/H-BF/corlib/pkg/parallel"
+
 	"github.com/pkg/errors"
 )
 
-//RunAPIServersOption option interface to call RunAPIServers
+// RunAPIServersOption option interface to call RunAPIServers
 type RunAPIServersOption interface {
 	apply(*runAPIServersOptions) error
 }
 
-//Run can run one or more API servers
+// Run can run one or more API servers
 func (srv *APIServer) Run(ctx context.Context, endpoint *pkgNet.Endpoint, options ...RunAPIServersOption) error {
 	const api = "APIServer.Run"
 

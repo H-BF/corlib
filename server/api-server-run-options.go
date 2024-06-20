@@ -2,14 +2,15 @@ package server
 
 import (
 	"context"
-	pkgNet "github.com/H-BF/corlib/pkg/net"
-	"github.com/pkg/errors"
 	"time"
 
+	pkgNet "github.com/H-BF/corlib/pkg/net"
+
 	"github.com/go-chi/chi"
+	"github.com/pkg/errors"
 )
 
-//RunWithAPIServer add one more API server
+// RunWithAPIServer add one more API server
 func RunWithAPIServer(endpoint *pkgNet.Endpoint, srv *APIServer) RunAPIServersOption {
 	return runAPIServersOptionsApplier(func(o *runAPIServersOptions) error {
 		nw := endpoint.Network()
@@ -26,7 +27,7 @@ func RunWithAPIServer(endpoint *pkgNet.Endpoint, srv *APIServer) RunAPIServersOp
 	})
 }
 
-//RunWithGracefulStop add time period to shutdown services gracefully
+// RunWithGracefulStop add time period to shutdown services gracefully
 func RunWithGracefulStop(period time.Duration) RunAPIServersOption {
 	return runAPIServersOptionsApplier(func(o *runAPIServersOptions) error {
 		o.gracefulStopPeriod = period

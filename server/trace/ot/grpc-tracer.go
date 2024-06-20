@@ -11,6 +11,7 @@ import (
 	"github.com/H-BF/corlib/pkg/conventions"
 	"github.com/H-BF/corlib/server"
 	"github.com/H-BF/corlib/server/internal"
+
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
@@ -22,15 +23,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//GRPCTracerOption опции
+// GRPCTracerOption опции
 type GRPCTracerOption interface {
 	apply(*GRPCTracer)
 }
 
-//ServerTracerProvider ...
+// ServerTracerProvider ...
 type ServerTracerProvider = trace.TracerProvider
 
-//GRPCTracer трейсим серверные GRPC вызовы
+// GRPCTracer трейсим серверные GRPC вызовы
 type GRPCTracer struct {
 	propagator     propagation.TextMapPropagator
 	tracerProvider ServerTracerProvider
@@ -40,7 +41,7 @@ var (
 	_ server.GRPCTracer = (*GRPCTracer)(nil)
 )
 
-//NewGRPCServerTracer ...
+// NewGRPCServerTracer ...
 func NewGRPCServerTracer(options ...GRPCTracerOption) *GRPCTracer {
 	ret := new(GRPCTracer)
 	for _, o := range options {
@@ -131,7 +132,7 @@ func (impl *GRPCTracer) spanEnd(span trace.Span, err error) {
 	span.End()
 }
 
-//TraceUnaryCalls unary interceptor
+// TraceUnaryCalls unary interceptor
 func (impl *GRPCTracer) TraceUnaryCalls(ctx context.Context, req interface{}, i *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	var span trace.Span
 	ctx, span = impl.spanStart(ctx, i.FullMethod)
@@ -140,7 +141,7 @@ func (impl *GRPCTracer) TraceUnaryCalls(ctx context.Context, req interface{}, i 
 	return
 }
 
-//TraceStreamCalls stream interceptor
+// TraceStreamCalls stream interceptor
 func (impl *GRPCTracer) TraceStreamCalls(srv interface{}, ss grpc.ServerStream, i *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	ctx, span := impl.spanStart(ss.Context(), i.FullMethod)
 	ss1 := internal.ServerStreamWithContext(ctx,

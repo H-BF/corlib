@@ -12,10 +12,10 @@ import (
 	"strings"
 )
 
-//UDS unix domain socket utils
+// UDS unix domain socket utils
 var UDS unixDomainSocketUtils
 
-//findUnixSocketFromURI обнаруживаем unix-socket из URI
+// findUnixSocketFromURI обнаруживаем unix-socket из URI
 func findUnixSocketFromURI(uri string) string {
 	var ret string
 	sm := reDetermineUnixSocket.FindAllStringSubmatch(uri, -1)
@@ -43,7 +43,7 @@ type (
 	}
 )
 
-//AddressFromURI address from URI
+// AddressFromURI address from URI
 func (unixDomainSocketUtils) AddressFromURI(uri string) net.Addr {
 	if a := findUnixSocketFromURI(uri); len(a) > 0 {
 		return &net.UnixAddr{Net: "unix", Name: a}
@@ -51,7 +51,7 @@ func (unixDomainSocketUtils) AddressFromURI(uri string) net.Addr {
 	return nil
 }
 
-//EnrichClient adds RoundTripper for http+unix:// scheme
+// EnrichClient adds RoundTripper for http+unix:// scheme
 func (unixDomainSocketUtils) EnrichClient(c *http.Client) *http.Client {
 	ret := new(http.Client)
 	if c == nil {
@@ -84,7 +84,7 @@ func enrichWithUnixDomainRoundTripper(transport http.RoundTripper) http.RoundTri
 	return ret
 }
 
-//RoundTrip impl http.RoundTripper for http+unix:// scheme
+// RoundTrip impl http.RoundTripper for http+unix:// scheme
 func (rt *unixDomainRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if SchemeUnixHTTP.Is(req.URL.Scheme) {
 		path1 := path.Join(req.URL.Host, req.URL.Path)

@@ -8,10 +8,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-//SignatureKey comparable key of signature
+// SignatureKey comparable key of signature
 type SignatureKey = interface{}
 
-//Signature is a function signature
+// Signature is a function signature
 type Signature interface {
 	EqualTo(Signature) bool
 	FromOutputValues() Signature
@@ -19,7 +19,7 @@ type Signature interface {
 	Key() SignatureKey
 }
 
-//MustSignatureOf inspect function signature or panic if error
+// MustSignatureOf inspect function signature or panic if error
 func MustSignatureOf(funcType interface{}) Signature {
 	s, e := MaySignatureOf(funcType)
 	if e != nil {
@@ -28,7 +28,7 @@ func MustSignatureOf(funcType interface{}) Signature {
 	return s
 }
 
-//MaySignatureOf inspect function signature or return error
+// MaySignatureOf inspect function signature or return error
 func MaySignatureOf(funcType interface{}) (Signature, error) {
 	result := &signature{}
 	v := reflect.Indirect(reflect.ValueOf(funcType))
@@ -71,12 +71,12 @@ type signature struct {
 	keyGetter func() SignatureKey
 }
 
-//ArgsInfo input arguments info
+// ArgsInfo input arguments info
 func (si *signature) ArgsInfo() (args []reflect.Type, variadic bool) {
 	return si.argsIn, si.variadic
 }
 
-//EqualTo check if signature is equal to the other
+// EqualTo check if signature is equal to the other
 func (si *signature) EqualTo(other Signature) bool {
 	argsR, variadic := other.ArgsInfo()
 	argsL := si.argsIn
@@ -91,7 +91,7 @@ func (si *signature) EqualTo(other Signature) bool {
 	return false
 }
 
-//FromOutputValues make signature from output data
+// FromOutputValues make signature from output data
 func (si *signature) FromOutputValues() Signature {
 	result := &signature{argsIn: si.argsOut}
 	var o sync.Once
@@ -110,7 +110,7 @@ func (si *signature) FromOutputValues() Signature {
 	return result
 }
 
-//Key makes signature comparable key / it mau be used in map(s)
+// Key makes signature comparable key / it mau be used in map(s)
 func (si *signature) Key() SignatureKey {
 	return si.keyGetter()
 }

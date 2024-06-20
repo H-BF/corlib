@@ -38,7 +38,7 @@ type (
 	}
 )
 
-//MakeSimpleTask TBD
+// MakeSimpleTask TBD
 func MakeSimpleTask(description string, functionalObject interface{}) (Task, error) {
 	const api = "MakeSimpleTask"
 	callable, err := functional.MayCallableOf(functionalObject)
@@ -51,10 +51,10 @@ func MakeSimpleTask(description string, functionalObject interface{}) (Task, err
 	}, nil
 }
 
-//MakeTaskInfo TBD
+// MakeTaskInfo TBD
 func MakeTaskInfo(descr string) *taskInfo { //nolint
 	return &taskInfo{
-		id:          TaskID(uuid.NewV4().String()),
+		id:          uuid.NewV4().String(),
 		description: descr,
 	}
 }
@@ -63,7 +63,7 @@ func MakeTaskInfo(descr string) *taskInfo { //nolint
 func OverrideTaskID(task Task, id string) Task {
 	return &overrideTaskID{
 		Task: task,
-		id:   TaskID(id),
+		id:   id,
 	}
 }
 

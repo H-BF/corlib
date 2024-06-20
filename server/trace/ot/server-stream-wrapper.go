@@ -4,6 +4,7 @@ import (
 	"sync/atomic"
 
 	otPriv "github.com/H-BF/corlib/internal/pkg/ot"
+
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
@@ -21,7 +22,7 @@ var (
 	_ grpc.ServerStream = (*serverStreamWrapper)(nil)
 )
 
-//SendMsg impl grpc.ServerStream
+// SendMsg impl grpc.ServerStream
 func (impl *serverStreamWrapper) SendMsg(m interface{}) (err error) {
 	if err = impl.ServerStream.SendMsg(m); err == nil {
 		impl.onMessage(m, false)
@@ -29,7 +30,7 @@ func (impl *serverStreamWrapper) SendMsg(m interface{}) (err error) {
 	return
 }
 
-//RecvMsg impl grpc.ServerStream
+// RecvMsg impl grpc.ServerStream
 func (impl *serverStreamWrapper) RecvMsg(m interface{}) (err error) {
 	if err = impl.ServerStream.RecvMsg(m); err == nil {
 		impl.onMessage(m, true)

@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-//ServerStreamWithContext override ServerStream with Context
+// ServerStreamWithContext override ServerStream with Context
 func ServerStreamWithContext(ctx context.Context, s grpc.ServerStream) grpc.ServerStream {
 	return &serverStreamWithContext{
 		ServerStream: s,

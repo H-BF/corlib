@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//AsyncJobStatus async job status
+// AsyncJobStatus async job status
 type AsyncJobStatus uint8
 
 const (
@@ -18,26 +18,26 @@ const (
 	AsyncJobStartFailed
 )
 
-//AsyncJobState job state at moment
+// AsyncJobState job state at moment
 type AsyncJobState struct {
 	Status   AsyncJobStatus
 	Returned []interface{}
 	Failure  error
 }
 
-//AsyncJobControl job control interface
+// AsyncJobControl job control interface
 type AsyncJobControl interface {
 	Wait(ctx context.Context) (AsyncJobState, error)
 }
 
-//AsyncJob asynchronous job interface
+// AsyncJob asynchronous job interface
 type AsyncJob interface {
 	Run(args ...interface{}) AsyncJobControl
 	WhenStateChanged(catchers ...func(state AsyncJobState)) AsyncJob
 	WhenCompleted(funcResultReceivers ...interface{}) AsyncJob
 }
 
-//MustAsyncJob construct async job or panic if error
+// MustAsyncJob construct async job or panic if error
 func MustAsyncJob(f interface{}) AsyncJob {
 	job, e := MayAsyncJob(f)
 	if e != nil {
@@ -46,7 +46,7 @@ func MustAsyncJob(f interface{}) AsyncJob {
 	return job
 }
 
-//MayAsyncJob construct async job or return error
+// MayAsyncJob construct async job or return error
 func MayAsyncJob(f interface{}) (AsyncJob, error) {
 	const api = "MayAsyncJob"
 	if j, ok := f.(AsyncJob); ok {
@@ -64,7 +64,7 @@ type asyncJobControl struct {
 	commonResult interface{} // --> []interface{} | error
 }
 
-//Wait wait result from async job
+// Wait wait result from async job
 func (jc *asyncJobControl) Wait(ctx context.Context) (AsyncJobState, error) {
 	const api = "AsyncJobControl/Wait"
 	var result AsyncJobState
@@ -79,7 +79,7 @@ func (jc *asyncJobControl) Wait(ctx context.Context) (AsyncJobState, error) {
 			result.Status = AsyncJobCompleted
 			result.Returned = t
 		default:
-			panic(errors.Errorf("%s: unexpected behaviour reached", api))
+			panic(errors.Errorf("%s: unexpected behavior reached", api))
 		}
 	case <-ctx.Done():
 		err = ctx.Err()
@@ -93,7 +93,7 @@ type asyncJob struct {
 	jobStateReceivers  []func(sate AsyncJobState)
 }
 
-//WhenCompleted register job result receiver callbacks
+// WhenCompleted register job result receiver callbacks
 func (job *asyncJob) WhenCompleted(funcResultReceivers ...interface{}) AsyncJob {
 	const api = "asyncJob/WhenCompleted"
 	expectedSignature := job.job.FromOutputValues()
@@ -113,14 +113,14 @@ func (job *asyncJob) WhenCompleted(funcResultReceivers ...interface{}) AsyncJob 
 	return &cpy
 }
 
-//WhenStateChanged register callbacks to receive changes job state
+// WhenStateChanged register callbacks to receive changes job state
 func (job *asyncJob) WhenStateChanged(catchers ...func(sate AsyncJobState)) AsyncJob {
 	cpy := *job
 	cpy.jobStateReceivers = catchers
 	return &cpy
 }
 
-//Run start async job
+// Run start async job
 func (job *asyncJob) Run(args ...interface{}) AsyncJobControl {
 	const api = "asyncJob/Run"
 	control := &asyncJobControl{

@@ -5,12 +5,12 @@ import (
 	"fmt"
 )
 
-//NewTextEvent ...
+// NewTextEvent ...
 func NewTextEvent(msg string, args ...interface{}) TextMessageEvent {
 	return TextMessageEvent{}.AddFmt(msg, args...)
 }
 
-//TextMessageEvent simple textual message
+// TextMessageEvent simple textual message
 type TextMessageEvent struct {
 	EventType
 	parts []struct {
@@ -19,7 +19,7 @@ type TextMessageEvent struct {
 	}
 }
 
-//AddFmt добавить строку с/без форматирования
+// AddFmt добавить строку с/без форматирования
 func (p TextMessageEvent) AddFmt(s string, args ...interface{}) TextMessageEvent {
 	p.parts = append(p.parts, struct {
 		message string
@@ -28,7 +28,7 @@ func (p TextMessageEvent) AddFmt(s string, args ...interface{}) TextMessageEvent
 	return p
 }
 
-//String is a fmt.Stringer contract
+// String is a fmt.Stringer contract
 func (p TextMessageEvent) String() string {
 	buf := bytes.NewBuffer(nil)
 	for _, item := range p.parts {

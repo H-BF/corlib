@@ -6,13 +6,13 @@ import (
 
 type taskMangerCtxKey struct{}
 
-//TaskManagerFromContext ...
+// TaskManagerFromContext ...
 func TaskManagerFromContext(ctx context.Context) TaskManger {
 	p, _ := ctx.Value(taskMangerCtxKey{}).(TaskManger)
 	return p
 }
 
-//TaskManagerToContext ...
+// TaskManagerToContext ...
 func TaskManagerToContext(ctx context.Context, tm TaskManger) context.Context {
 	return context.WithValue(ctx, taskMangerCtxKey{}, tm)
 }

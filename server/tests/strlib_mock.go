@@ -7,6 +7,7 @@ import (
 
 	"github.com/H-BF/corlib/server"
 	"github.com/H-BF/corlib/server/tests/strlib"
+
 	"github.com/go-openapi/spec"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pkg/errors"
@@ -50,28 +51,28 @@ var (
 	_ = GetStrlibDocs
 )
 
-//ProvideMock ...
+// ProvideMock ...
 func (sLib *StrLibImpl) ProvideMock() *mock.Mock {
 	return &sLib.Mock
 }
 
-//Description ...
+// Description ...
 func (sLib *StrLibImpl) Description() grpc.ServiceDesc {
 	return strlib.Strlib_ServiceDesc
 }
 
-//RegisterGRPC ...
+// RegisterGRPC ...
 func (sLib *StrLibImpl) RegisterGRPC(_ context.Context, srv *grpc.Server) error {
 	strlib.RegisterStrlibServer(srv, sLib)
 	return nil
 }
 
-//RegisterProxyGW ...
+// RegisterProxyGW ...
 func (sLib *StrLibImpl) RegisterProxyGW(ctx context.Context, mux *runtime.ServeMux, c *grpc.ClientConn) error {
 	return strlib.RegisterStrlibHandler(ctx, mux, c)
 }
 
-//Uppercase mocked
+// Uppercase mocked
 func (sLib *StrLibImpl) Uppercase(_a0 context.Context, _a1 *strlib.UppercaseQuery) (*strlib.UppercaseResponse, error) {
 	ret := sLib.Called(_a0, _a1)
 
@@ -99,7 +100,7 @@ func (sLib *StrLibImpl) Uppercase(_a0 context.Context, _a1 *strlib.UppercaseQuer
 	return r0, r1
 }
 
-//OnStart ...
+// OnStart ...
 func (s *WithOnStartStopEvents) OnStart() {
 	ret := s.ProvideMock().Called()
 	if f, ok := ret.Get(0).(func()); ok {
@@ -107,7 +108,7 @@ func (s *WithOnStartStopEvents) OnStart() {
 	}
 }
 
-//OnStop ...
+// OnStop ...
 func (s *WithOnStartStopEvents) OnStop() {
 	ret := s.ProvideMock().Called()
 	if f, ok := ret.Get(0).(func()); ok {

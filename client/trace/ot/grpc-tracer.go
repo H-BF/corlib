@@ -19,10 +19,10 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-//ClientTracerProvider ...
+// ClientTracerProvider ...
 type ClientTracerProvider = trace.TracerProvider
 
-//NewClientGRPCTracer makes instance of *GRPCTracer
+// NewClientGRPCTracer makes instance of *GRPCTracer
 func NewClientGRPCTracer(tracerProvider ClientTracerProvider) *GRPCTracer {
 	return &GRPCTracer{
 		tracerProvider: tracerProvider,
@@ -34,7 +34,7 @@ var (
 	_ = NewClientGRPCTracer
 )
 
-//GRPCTracer OpenTelemetry tracer for GRPC client
+// GRPCTracer OpenTelemetry tracer for GRPC client
 type GRPCTracer struct {
 	propagator     propagation.TextMapPropagator
 	tracerProvider ClientTracerProvider
@@ -98,7 +98,7 @@ func (impl *GRPCTracer) spanStart(ctx context.Context, fullMethodName string, ta
 	return span, metadata.NewOutgoingContext(ctx1, md)
 }
 
-//TraceUnaryCalls unary interceptor
+// TraceUnaryCalls unary interceptor
 func (impl *GRPCTracer) TraceUnaryCalls(ctx context.Context, method string, req, reply interface{},
 	cc *grpc.ClientConn, invoker grpc.UnaryInvoker, callOpts ...grpc.CallOption) (err error) {
 	span, ctx1 := impl.spanStart(ctx, method, cc.Target())
@@ -109,10 +109,10 @@ func (impl *GRPCTracer) TraceUnaryCalls(ctx context.Context, method string, req,
 	return
 }
 
-//TraceStreamCalls stream interceptor
+// TraceStreamCalls stream interceptor
 func (impl *GRPCTracer) TraceStreamCalls(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string,
 	streamer grpc.Streamer, callOpts ...grpc.CallOption) (grpc.ClientStream, error) {
-
+	//
 	span, ctx1 := impl.spanStart(ctx, method, cc.Target())
 	clientStream, err := streamer(ctx1, desc, cc, method, callOpts...)
 	if err != nil {

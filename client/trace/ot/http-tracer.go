@@ -9,6 +9,7 @@ import (
 	appIdentity "github.com/H-BF/corlib/app/identity"
 	"github.com/H-BF/corlib/logger"
 	netPkg "github.com/H-BF/corlib/pkg/net"
+
 	"go.opentelemetry.io/otel/attribute"
 	otCodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
@@ -17,7 +18,7 @@ import (
 	"go.uber.org/zap"
 )
 
-//WrapClient добавляем клиету OTel трэйсинг
+// WrapClient добавляем клиету OTel трэйсинг
 func WrapClient(c *http.Client, traceProv ClientTracerProvider) *http.Client {
 	ret := new(http.Client)
 	if c == nil {
@@ -43,7 +44,7 @@ type transportWrapper struct {
 	http.RoundTripper
 }
 
-//RoundTrip impl http.RoundTripper
+// RoundTrip impl http.RoundTripper
 func (tr *transportWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
 	span, req2 := tr.spanStart(req)
 	ctx, header := req2.Context(), req2.Header

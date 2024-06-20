@@ -11,7 +11,7 @@ func Chain2StatsHandler(handlersChain ...stats.Handler) stats.Handler {
 	return statsHandlerChain(handlersChain)
 }
 
-//statsHandlerChain implements stats.Handler interface
+// statsHandlerChain implements stats.Handler interface
 type statsHandlerChain []stats.Handler
 
 var _ stats.Handler = (*statsHandlerChain)(nil)

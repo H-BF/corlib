@@ -2,6 +2,7 @@ package ot
 
 import (
 	"context"
+
 	sdkRes "go.opentelemetry.io/otel/sdk/resource"
 	sdkTrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -35,7 +36,7 @@ type (
 	}
 )
 
-//NewAppTraceProvider creates trace.TracerProvider instance
+// NewAppTraceProvider creates trace.TracerProvider instance
 func NewAppTraceProvider(_ context.Context, deps TraceProviderDeps) TracerProvider {
 	if deps.Sampler == nil {
 		deps.Sampler = sdkTrace.AlwaysSample()

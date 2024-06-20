@@ -4,35 +4,35 @@ import (
 	"context"
 )
 
-//Auth base interface
+// Auth base interface
 type Auth interface {
 	isAuthPrivate()
 }
 
-//AuthProvider auth provider
+// AuthProvider auth provider
 type AuthProvider func(ctx context.Context) (Auth, error)
 
-//NullAuth no auth at all
+// NullAuth no auth at all
 type NullAuth struct {
 	Auth `json:"-"`
 }
 
-//HiddenString hidden on print
+// HiddenString hidden on print
 type HiddenString string
 
-//UserBasicAuth user+password
+// UserBasicAuth user+password
 type UserBasicAuth struct {
 	Auth     `json:"-"`
 	Username HiddenString
 	Password HiddenString
 }
 
-//String Stringer
+// String Stringer
 func (HiddenString) String() string {
 	return "******"
 }
 
-//MarshalJSON json.Marshal-er
+// MarshalJSON json.Marshal-er
 func (HiddenString) MarshalJSON() ([]byte, error) {
 	return []byte("******"), nil
 }

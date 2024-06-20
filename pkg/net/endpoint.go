@@ -8,12 +8,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-//Endpoint endpoint to connect to
+// Endpoint endpoint to connect to
 type Endpoint struct {
 	endpointAddress
 }
 
-//ParseEndpoint parse endpoint address
+// ParseEndpoint parse endpoint address
 func ParseEndpoint(src string) (*Endpoint, error) {
 	const (
 		api  = "ParseEndpoint"
@@ -58,7 +58,7 @@ func (ep *Endpoint) String() string {
 	return s
 }
 
-//Address makes net address
+// Address makes net address
 func (ep *Endpoint) Address() (string, error) {
 	const api = "Endpoint.Address"
 	switch t := ep.endpointAddress.(type) {
@@ -70,7 +70,7 @@ func (ep *Endpoint) Address() (string, error) {
 	return "", errors.Errorf("%s: endpoint is not initialized", api)
 }
 
-//HostPort gives host - port if TCP case is
+// HostPort gives host - port if TCP case is
 func (ep *Endpoint) HostPort() (host, port string, err error) {
 	const api = "Endpoint.HostPort"
 	switch t := ep.endpointAddress.(type) {
@@ -82,13 +82,13 @@ func (ep *Endpoint) HostPort() (host, port string, err error) {
 	return
 }
 
-//IsUnixDomain returns true when endpoint is unix domain socket
+// IsUnixDomain returns true when endpoint is unix domain socket
 func (ep *Endpoint) IsUnixDomain() bool {
 	_, ret := ep.endpointAddress.(endpointAddressUnix)
 	return ret
 }
 
-//FQN full qualified name
+// FQN full qualified name
 func (ep *Endpoint) FQN() string {
 	if a, _ := ep.Address(); len(a) > 0 {
 		return ep.Network() + "://" + a

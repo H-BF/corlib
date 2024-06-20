@@ -12,7 +12,7 @@ import (
 // SwaggerDef = spec.Swagger
 type SwaggerDef = spec.Swagger
 
-//NewHandler делаем такую штуку которая покажет ним сваггер документ
+// NewHandler делаем такую штуку которая покажет ним сваггер документ
 func NewHandler(sd *SwaggerDef) (http.Handler, error) {
 	const api = "swagger_ui.NewHandler"
 
@@ -38,6 +38,7 @@ type handlerImpl struct {
 	fileServer http.Handler
 }
 
+// ServeHTTP -
 func (h *handlerImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/swagger.json" {
 		w.Header().Set("Content-Type", "application/json")

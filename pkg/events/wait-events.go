@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-//WaitOne ждем когда сработает хотябы одно слбытие
+// WaitOne ждем когда сработает хотябы одно слбытие
 func WaitOne(ctx context.Context, event1 Event, otherEvents ...Event) (int, error) {
 	n := 1 + len(otherEvents)
 	selectCases := make([]reflect.SelectCase, 0, n+1)
@@ -26,7 +26,7 @@ func WaitOne(ctx context.Context, event1 Event, otherEvents ...Event) (int, erro
 	return selected, nil
 }
 
-//WaitAll ждем когда сработают все события
+// WaitAll ждем когда сработают все события
 func WaitAll(ctx context.Context, event1 Event, otherEvents ...Event) error {
 	n := 1 + len(otherEvents)
 	selectCases := make([]reflect.SelectCase, 0, n+1)

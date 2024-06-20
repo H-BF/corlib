@@ -1,6 +1,6 @@
 package interceptors
 
-//DefInterceptor default interceptor Id
+// DefInterceptor default interceptor Id
 type DefInterceptor int
 
 const (

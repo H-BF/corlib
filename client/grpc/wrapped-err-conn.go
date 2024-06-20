@@ -5,11 +5,12 @@ import (
 	"io"
 
 	"github.com/H-BF/corlib/pkg/conventions"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
-//WithErrorWrapper ...
+// WithErrorWrapper ...
 func WithErrorWrapper(c grpc.ClientConnInterface, serviceNamePrefix string) grpc.ClientConnInterface {
 	if _, ok := c.(errWrapperInterface); ok {
 		return c

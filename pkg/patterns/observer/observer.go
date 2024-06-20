@@ -30,14 +30,14 @@ type (
 	}
 )
 
-//NewSubject создает субъект для оповещения обозревателей событий
+// NewSubject создает субъект для оповещения обозревателей событий
 func NewSubject() Subject {
 	return &subjectImpl{
 		observerHolder: make(observerHolder),
 	}
 }
 
-//NewObserver создает обозреватель событий
+// NewObserver создает обозреватель событий
 func NewObserver(er EventReceiver, async bool, events ...EventType) Observer {
 	ret := &observerImpl{
 		EventReceiver: er,

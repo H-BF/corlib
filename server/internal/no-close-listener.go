@@ -4,12 +4,12 @@ import (
 	"net"
 )
 
-//NoCloseListener is net listener with fake Close meth
+// NoCloseListener is net listener with fake Close meth
 type NoCloseListener struct {
 	net.Listener
 }
 
-//Close ...
+// Close ...
 func (nn NoCloseListener) Close() error {
 	return nil
 }

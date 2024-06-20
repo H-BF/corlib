@@ -8,6 +8,7 @@ import (
 	"github.com/H-BF/corlib/logger"
 	"github.com/H-BF/corlib/pkg/conventions"
 	"github.com/H-BF/corlib/pkg/patterns/observer"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -33,42 +34,42 @@ type (
 	CustomRecoveryHandler func(ctx context.Context, info conventions.GrpcMethodInfo, v interface{}) error
 )
 
-//RecoveryWithNoLog не логируем панику
+// RecoveryWithNoLog не логируем панику
 func RecoveryWithNoLog() RecoveryOption {
 	return func(options *recoveryOptions) {
 		options.noLog = true
 	}
 }
 
-//RecoveryWithNoCallStack не добавляем стек вызова при логоровании
+// RecoveryWithNoCallStack не добавляем стек вызова при логоровании
 func RecoveryWithNoCallStack() RecoveryOption {
 	return func(options *recoveryOptions) {
 		options.noCallStack = true
 	}
 }
 
-//RecoveryWithObservers добавим OnPanicEvent обозревателей
+// RecoveryWithObservers добавим OnPanicEvent обозревателей
 func RecoveryWithObservers(obs ...OnPanicEventObserver) RecoveryOption {
 	return func(options *recoveryOptions) {
 		options.observers = append(options.observers, obs...)
 	}
 }
 
-//RecoveryWithHandler добавим кастомный обработчик паники
+// RecoveryWithHandler добавим кастомный обработчик паники
 func RecoveryWithHandler(h CustomRecoveryHandler) RecoveryOption {
 	return func(options *recoveryOptions) {
 		options.customHandler = h
 	}
 }
 
-//Recovery ...
+// Recovery ...
 type Recovery struct {
 	noRecovery bool
 	opts       recoveryOptions
 	subject    observer.Subject
 }
 
-//NewRecovery делаем обработчик паники
+// NewRecovery делаем обработчик паники
 func NewRecovery(opts ...RecoveryOption) *Recovery {
 	ret := new(Recovery)
 	for _, o := range opts {
@@ -99,7 +100,7 @@ func NewRecovery(opts ...RecoveryOption) *Recovery {
 	return ret
 }
 
-//NoRecovery никиаких обработчикао паники - паника - роняем приложение
+// NoRecovery никиаких обработчикао паники - паника - роняем приложение
 func NoRecovery() *Recovery {
 	return &Recovery{
 		noRecovery: true,
@@ -113,7 +114,7 @@ type recoveryOptions struct {
 	noCallStack   bool
 }
 
-//Unary ...
+// Unary ...
 func (impl *Recovery) Unary(ctx context.Context, req interface{}, i *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	if !impl.noRecovery {
 		defer func() {
@@ -126,7 +127,7 @@ func (impl *Recovery) Unary(ctx context.Context, req interface{}, i *grpc.UnaryS
 	return
 }
 
-//Stream stream server interceptor
+// Stream stream server interceptor
 func (impl *Recovery) Stream(srv interface{}, ss grpc.ServerStream, i *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 	if !impl.noRecovery {
 		defer func(ctx context.Context) {

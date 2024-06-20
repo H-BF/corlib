@@ -41,7 +41,7 @@ type (
 	}
 )
 
-//NewJobScheduler создаем новую cron-задачу
+// NewJobScheduler создаем новую cron-задачу
 func NewJobScheduler(appCtx context.Context, conf JobSchedulerConf) (JobScheduler, error) {
 	const api = "NewJobScheduler"
 
@@ -128,7 +128,7 @@ type (
 	closeEventQueue struct{}
 )
 
-//DetachAllObservers override observer.Subject.DetachAllObservers
+// DetachAllObservers override observer.Subject.DetachAllObservers
 func (ps *protectSubject) DetachAllObservers() {}
 
 func (man *jobSchedulerImpl) Close() error {
@@ -158,12 +158,12 @@ func (man *jobSchedulerImpl) Close() error {
 	return nil
 }
 
-//Subject ...
+// Subject ...
 func (man *jobSchedulerImpl) Subject() observer.Subject {
 	return &protectSubject{Subject: man.subject}
 }
 
-//ID ...
+// ID ...
 func (man *jobSchedulerImpl) ID() string {
 	return man.conf.JobID
 }
@@ -186,7 +186,7 @@ func (man *jobSchedulerImpl) SetScheduler(sch scheduler.Scheduler) {
 	man.timer.Reset(tme)
 }
 
-//Schedule ...
+// Schedule ...
 func (man *jobSchedulerImpl) Schedule() {
 	man.scheduleOnce.Do(func() {
 		man.Lock()
@@ -201,7 +201,7 @@ func (man *jobSchedulerImpl) Schedule() {
 	})
 }
 
-//Enable enable or not enable
+// Enable enable or not enable
 func (man *jobSchedulerImpl) Enable(enabled bool) {
 	var stateChanged bool
 	if enabled {

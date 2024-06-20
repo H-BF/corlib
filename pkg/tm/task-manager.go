@@ -9,7 +9,7 @@ import (
 	"github.com/H-BF/corlib/pkg/functional"
 )
 
-//TaskStatus TBD
+// TaskStatus TBD
 type TaskStatus int8
 
 const (
@@ -63,7 +63,7 @@ type (
 	}
 )
 
-//NewTaskManager creates TaskManger instance
+// NewTaskManager creates TaskManger instance
 func NewTaskManager() TaskManger {
 	return &taskManager{
 		active: make(taskManagerTasks),

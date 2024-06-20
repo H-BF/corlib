@@ -19,7 +19,7 @@ func ToContext(ctx context.Context, l TypeOfLogger) context.Context {
 	return context.WithValue(ctx, contextKey{}, l)
 }
 
-//IsLevelEnabled is log level enabled
+// IsLevelEnabled is log level enabled
 func IsLevelEnabled(ctx context.Context, lvl LogLevel) bool {
 	if l, ok := ctx.Value(contextKey{}).(TypeOfLogger); ok {
 		return l.Enabled(lvl)

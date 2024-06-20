@@ -84,8 +84,8 @@ func (ass *runAPIServersAssistant) cleanup() {
 
 func (ass *runAPIServersAssistant) newGRPCproxyConn(ctx context.Context, ep *pkgNet.Endpoint, tlsConf *tls.Config) (*grpc.ClientConn, error) {
 	opts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
-		grpc_retry.WithMax(100),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)), //nolint:mnd
+		grpc_retry.WithMax(100), //nolint:mnd
 	}
 	var endpointAddr string
 	if ep.IsUnixDomain() {

@@ -6,11 +6,12 @@ import (
 
 	"github.com/H-BF/corlib/app/jobs"
 	"github.com/H-BF/corlib/pkg/tm"
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/push"
 )
 
-//NewJob creates new prometheus push-gateway job
+// NewJob creates new prometheus push-gateway job
 func NewJob(ctx context.Context, conf Config) (jobs.JobScheduler, error) {
 	const api = "push-gateway.NewPushJob"
 
@@ -33,7 +34,7 @@ type wrapHTTPDoer struct {
 	wrapped push.HTTPDoer
 }
 
-//Do overrides push.HTTPDoer
+// Do overrides push.HTTPDoer
 func (doer *wrapHTTPDoer) Do(req *http.Request) (*http.Response, error) {
 	req = req.WithContext(doer.ctx)
 	return doer.wrapped.Do(req)

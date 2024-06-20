@@ -7,11 +7,12 @@ import (
 
 	"github.com/H-BF/corlib/pkg/lazy"
 	"github.com/H-BF/corlib/pkg/patterns/observer"
+
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
 )
 
-//WhenSignalExit adds `func() error` callback to the globalCloser
+// WhenSignalExit adds `func() error` callback to the globalCloser
 func WhenSignalExit(f ...func() error) {
 	globalAtExitManager.Value().(*AtExitManager).WhenSignalExit(f...)
 }
@@ -27,13 +28,13 @@ type AtExitManager struct {
 	errFromClose error
 }
 
-//NewAtExitManager returns new WhenSignalExit, if []os.Signal is specified Closer will automatically
-//call Close when one of signals is received from OS
+// NewAtExitManager returns new WhenSignalExit, if []os.Signal is specified Closer will automatically
+// call Close when one of signals is received from OS
 func NewAtExitManager() *AtExitManager {
 	return &AtExitManager{closed: make(chan struct{})}
 }
 
-//WhenSignalExit register RIP functions
+// WhenSignalExit register RIP functions
 func (c *AtExitManager) WhenSignalExit(f ...func() error) {
 	c.Lock()
 	defer c.Unlock()

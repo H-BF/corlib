@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	otPriv "github.com/H-BF/corlib/internal/pkg/ot"
+
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
@@ -27,7 +28,7 @@ type clientStreamWrapper struct {
 
 var _ grpc.ClientStream = (*clientStreamWrapper)(nil)
 
-//Header impl grpc.ClientStream
+// Header impl grpc.ClientStream
 func (impl *clientStreamWrapper) Header() (metadata.MD, error) {
 	md, err := impl.ClientStream.Header()
 	if err != nil {
@@ -36,7 +37,7 @@ func (impl *clientStreamWrapper) Header() (metadata.MD, error) {
 	return md, err
 }
 
-//CloseSend impl grpc.ClientStream
+// CloseSend impl grpc.ClientStream
 func (impl *clientStreamWrapper) CloseSend() error {
 	if err := impl.ClientStream.CloseSend(); err != nil {
 		impl.endSpan(err)
@@ -45,7 +46,7 @@ func (impl *clientStreamWrapper) CloseSend() error {
 	return nil
 }
 
-//SendMsg impl grpc.ClientStream
+// SendMsg impl grpc.ClientStream
 func (impl *clientStreamWrapper) SendMsg(m interface{}) error {
 	if err := impl.ClientStream.SendMsg(m); err != nil {
 		impl.endSpan(err)
@@ -55,7 +56,7 @@ func (impl *clientStreamWrapper) SendMsg(m interface{}) error {
 	return nil
 }
 
-//RecvMsg impl grpc.ClientStream
+// RecvMsg impl grpc.ClientStream
 func (impl *clientStreamWrapper) RecvMsg(m interface{}) error {
 	err := impl.ClientStream.RecvMsg(m)
 	if errors.Is(err, io.EOF) {

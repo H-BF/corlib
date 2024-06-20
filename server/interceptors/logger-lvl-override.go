@@ -12,12 +12,12 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-//LogLevelOverrider ...
+// LogLevelOverrider ...
 var LogLevelOverrider logLvlOverride
 
 type logLvlOverride struct{}
 
-//HTTP is a http.Handler wrapper
+// HTTP is a http.Handler wrapper
 func (logLvlOverride) HTTP(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var level zapcore.Level
@@ -39,10 +39,9 @@ func (logLvlOverride) HTTP(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-
 }
 
-//Unary overrides unary interceptor log level
+// Unary overrides unary interceptor log level
 func (logLvlOverride) Unary(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		lvl := md.Get(conventions.LoggerLevelHeader)
@@ -65,7 +64,7 @@ func (logLvlOverride) Unary(ctx context.Context, req interface{}, _ *grpc.UnaryS
 	return handler(ctx, req)
 }
 
-//Stream overrides stream interceptor log level
+// Stream overrides stream interceptor log level
 func (logLvlOverride) Stream(srv interface{}, ss grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	if md, ok := metadata.FromIncomingContext(ss.Context()); ok {
 		lvl := md.Get(conventions.LoggerLevelHeader)

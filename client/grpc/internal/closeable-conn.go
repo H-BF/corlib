@@ -11,10 +11,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-//ErrConnClosed send when grpc is closed
+// ErrConnClosed send when grpc is closed
 var ErrConnClosed = errors.New("GRPC conn is closed")
 
-//MakeCloseable ...
+// MakeCloseable ...
 func MakeCloseable(c grpc.ClientConnInterface) *closableConn { //nolint:revive
 	type connType = struct {
 		grpc.ClientConnInterface
@@ -53,19 +53,19 @@ type closableConn struct {
 	close func() error
 }
 
-//Invoke call unary RPC
+// Invoke call unary RPC
 func (c *closableConn) Invoke(ctx context.Context, method string, args interface{}, reply interface{}, opts ...grpc.CallOption) error {
 	conn := c.conn()
 	return conn.Invoke(ctx, method, args, reply, opts...)
 }
 
-//NewStream begins a streaming RPC.
+// NewStream begins a streaming RPC.
 func (c *closableConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 	conn := c.conn()
 	return conn.NewStream(ctx, desc, method, opts...)
 }
 
-//CloseConn it closes connection
+// CloseConn it closes connection
 func (c *closableConn) CloseConn() error {
 	return c.close()
 }

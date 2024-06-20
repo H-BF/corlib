@@ -54,7 +54,6 @@ func (composer SwaggerComposer) Compose(primary *spec.Swagger, mixins ...*spec.S
 			if _, exists := primary.Responses[k]; !exists {
 				primary.Responses[k] = v
 			}
-
 		}
 	}
 	composer.fixEmptyResponseDescriptions(primary)

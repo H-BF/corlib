@@ -1,10 +1,8 @@
-package slice
+package slice //nolint:goimports,gofmt
 
-import (
-	"reflect"
-)
+import "reflect"
 
-//DedupSlice TBD
+// DedupSlice -
 func DedupSlice(sortedSlice interface{}, predicateEq func(i, j int) bool) (retLen int) {
 	v := reflect.Indirect(reflect.ValueOf(sortedSlice))
 	if v.Type().Kind() == reflect.Slice {
@@ -17,7 +15,7 @@ func DedupSlice(sortedSlice interface{}, predicateEq func(i, j int) bool) (retLe
 	return
 }
 
-//DedupAbstract TBD
+// DedupAbstract -
 func DedupAbstract(nLen int, swapper func(i, j int), predicateEq func(i, j int) bool) (retLen int) {
 	if j := 0; nLen > 0 {
 		for i := 0; i < nLen; i++ {

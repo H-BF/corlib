@@ -5,10 +5,10 @@ import (
 	"sync"
 )
 
-//EventID id of event
+// EventID id of event
 type EventID int
 
-//Event ...
+// Event ...
 type Event interface {
 	ID() EventID
 	Fire()
@@ -17,7 +17,7 @@ type Event interface {
 	Done() <-chan struct{}
 }
 
-//NewEvent ...
+// NewEvent ...
 func NewEvent(id EventID) Event {
 	var once sync.Once
 	ch := make(chan struct{})
@@ -47,12 +47,12 @@ type eventImpl struct {
 	fireOnce func()
 }
 
-//ID ...
+// ID ...
 func (ev *eventImpl) ID() EventID {
 	return ev.id
 }
 
-//Fire ...
+// Fire ...
 func (ev *eventImpl) Fire() {
 	ev.fireOnce()
 }
@@ -63,7 +63,7 @@ func (ev *eventImpl) FireIf(val bool) {
 	}
 }
 
-//HasFired ...
+// HasFired ...
 func (ev *eventImpl) HasFired() bool {
 	select {
 	case <-ev.marker:

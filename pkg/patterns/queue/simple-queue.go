@@ -9,12 +9,12 @@ import (
 	"time"
 )
 
-//NewLIFO new LIFO queue
+// NewLIFO new LIFO queue
 func NewLIFO(ctx context.Context) SimpleQueue {
 	return newSimpleQueue2(ctx, true)
 }
 
-//NewFIFO new LIFO queue
+// NewFIFO new LIFO queue
 func NewFIFO(ctx context.Context) SimpleQueue {
 	return newSimpleQueue2(ctx, false)
 }
@@ -48,7 +48,7 @@ type simpleQueue struct {
 	close  func()
 }
 
-//Type impl SimpleQueue
+// Type impl SimpleQueue
 func (imp *simpleQueue) Type() Type {
 	if imp.lifo {
 		return TypeLIFO
@@ -56,7 +56,7 @@ func (imp *simpleQueue) Type() Type {
 	return TypeFIFO
 }
 
-//Put impl SimpleQueue
+// Put impl SimpleQueue
 func (imp *simpleQueue) Put(vals ...interface{}) bool {
 	if len(vals) > 0 {
 		imp.mx.Lock()
@@ -83,7 +83,7 @@ func (imp *simpleQueue) Put(vals ...interface{}) bool {
 	return true
 }
 
-//Get impl SimpleQueue
+// Get impl SimpleQueue
 func (imp *simpleQueue) Get(ctx context.Context) (interface{}, error) {
 	for {
 		imp.mx.Lock()
@@ -115,7 +115,7 @@ func (imp *simpleQueue) Get(ctx context.Context) (interface{}, error) {
 	}
 }
 
-//Close impl Closer
+// Close impl Closer
 func (imp *simpleQueue) Close() error {
 	imp.close()
 	return nil

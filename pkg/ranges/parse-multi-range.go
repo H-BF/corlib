@@ -5,10 +5,10 @@ import (
 	"regexp"
 )
 
-//RangeParser range parser function
+// RangeParser range parser function
 type RangeParser[T any, S ParseSources] func(S) (Range[T], error)
 
-//ParseMultiRange parse multi range
+// ParseMultiRange parse multi range
 func ParseMultiRange[T any, S ParseSources, S1 ParseSources](
 	in S,
 	parser RangeParser[T, S1],

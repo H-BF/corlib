@@ -62,7 +62,6 @@ func (met *totalRequestsMetric) Describe(c chan<- *prometheus.Desc) {
 	for _, coll := range collectors {
 		coll.Describe(c)
 	}
-
 }
 
 func (met *totalRequestsMetric) Collect(c chan<- prometheus.Metric) {
@@ -72,7 +71,7 @@ func (met *totalRequestsMetric) Collect(c chan<- prometheus.Metric) {
 	}
 }
 
-//HandleRPC ...
+// HandleRPC ...
 func (met *totalRequestsMetric) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 	if stat.IsClient() {
 		return

@@ -93,7 +93,7 @@ func SetLevel(l LogLevel) {
 	defaultLevel.SetLevel(l)
 }
 
-//Global returns current global logger.
+// Global returns current global logger.
 func Global() TypeOfLogger {
 	return global
 }

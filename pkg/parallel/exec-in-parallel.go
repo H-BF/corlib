@@ -7,7 +7,7 @@ import (
 	"github.com/H-BF/corlib/pkg/lazy"
 )
 
-//ExecAbstract uses abstract algorithm to execute some task in parallel manner
+// ExecAbstract uses abstract algorithm to execute some task in parallel manner
 /* Notes
 Функция ExecAbstract - это абстрактная реализация алгоритма конкуретного выполения задач.
 Считается, если задан maxConcurrency > 0, то возможно выполние задач с привлечением дополнительных (maxConcurrency) go-рутин, это
@@ -66,10 +66,10 @@ func ExecAbstract(taskCount int, maxConcurrency int32, abstractTask func(int) er
 	return err
 }
 
-//TaskMapper ...
+// TaskMapper ...
 type TaskMapper func() func() error
 
-//MapExecAbstract делает тоже самое, что и ExecAbstract
+// MapExecAbstract делает тоже самое, что и ExecAbstract
 func MapExecAbstract(mapper TaskMapper, maxConcurrency int32) error {
 	var (
 		joinPoint        sync.WaitGroup

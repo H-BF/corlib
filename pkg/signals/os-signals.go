@@ -8,13 +8,13 @@ import (
 	"github.com/H-BF/corlib/pkg/patterns/observer"
 )
 
-//SignalFromOS signals incoming from OS
+// SignalFromOS signals incoming from OS
 type SignalFromOS struct {
 	observer.EventType
 	syscall.Signal
 }
 
-//SubjOfSignalsFromOS signals incoming from OS subject
+// SubjOfSignalsFromOS signals incoming from OS subject
 func SubjOfSignalsFromOS() observer.Subject {
 	return subjOfSignalsFromOS
 }

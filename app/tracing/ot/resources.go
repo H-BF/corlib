@@ -5,11 +5,12 @@ import (
 
 	appIdentity "github.com/H-BF/corlib/app/identity"
 	"go.opentelemetry.io/otel/attribute"
+
 	sdkRes "go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
-//MakeAppResource make app trace e resource
+// MakeAppResource make app trace e resource
 func MakeAppResource(ctx context.Context) (*sdkRes.Resource, error) {
 	//TODO: Maybe detect k8s options
 

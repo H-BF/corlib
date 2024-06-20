@@ -74,7 +74,7 @@ func (m *GrpcMethodInfo) Init(source string) error {
 	r := reMethodName.FindAllStringSubmatchIndex(source, -1)
 	if len(r) > 0 {
 		parts := r[0]
-		if len(parts) == 6 {
+		if len(parts) == 6 { //nolint:mnd
 			res := GrpcMethodInfo{
 				Method:     source[parts[4]:parts[5]],
 				ServiceFQN: source[parts[2]:parts[3]],
@@ -82,7 +82,7 @@ func (m *GrpcMethodInfo) Init(source string) error {
 			r1 := reServiceName.FindAllSubmatchIndex([]byte(res.ServiceFQN), -1)
 			if len(r1) > 0 {
 				parts1 := r1[0]
-				if len(parts1) == 6 {
+				if len(parts1) == 6 { //nolint:mnd
 					if parts1[3]-parts1[2] > 0 {
 						res.Service = res.ServiceFQN[parts1[2]:parts1[3]]
 					} else if parts1[5]-parts1[4] > 0 {
