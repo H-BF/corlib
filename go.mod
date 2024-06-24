@@ -9,6 +9,7 @@ require (
 	github.com/emirpasic/gods v1.18.1
 	github.com/go-chi/chi v1.5.4
 	github.com/go-openapi/spec v0.20.6
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/google/nftables v0.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.2
