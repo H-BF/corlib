@@ -31,7 +31,7 @@ func (o ICMP) IsEq(other ICMP) bool {
 // Validate -
 func (o ICMP) Validate() error {
 	return oz.ValidateStruct(&o,
-		oz.Field(&o.IPv, oz.Required, oz.In(uint8(IPv4), uint8(IPv6)).
+		oz.Field(&o.IPv, oz.Required, oz.In(IPv4, IPv6).
 			Error("IPv should be in [4,6]")),
 	)
 }
