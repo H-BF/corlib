@@ -9,6 +9,7 @@ import (
 
 	di "github.com/H-BF/corlib/pkg/dict"
 	rc "github.com/H-BF/corlib/pkg/net/resources"
+
 	"github.com/c-robinson/iplib"
 	nftlib "github.com/google/nftables"
 	bu "github.com/google/nftables/binaryutil"

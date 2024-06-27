@@ -7,6 +7,8 @@ import (
 	"fmt"
 
 	dkt "github.com/H-BF/corlib/pkg/dict"
+	hlp "github.com/H-BF/corlib/pkg/nftables/helpers"
+
 	"github.com/ahmetb/go-linq/v3"
 	nftlib "github.com/google/nftables"
 	"github.com/pkg/errors"
@@ -59,7 +61,7 @@ func LoadState(lst Lister) (cnf StateOfNFTables, err error) {
 
 // String -
 func (k NfTableKey) String() string {
-	return fmt.Sprintf("'%s'/%s", k.Name, tableFamily2s(k.TableFamily))
+	return fmt.Sprintf("'%s'/%s", k.Name, hlp.TableFamily2S(k.TableFamily))
 }
 
 // String -
@@ -189,24 +191,4 @@ func (cnf *StateOfNFTables) loadObjects(lst Lister) (err error) {
 		return err == nil
 	})
 	return err
-}
-
-func tableFamily2s(f nftlib.TableFamily) string {
-	switch f {
-	case nftlib.TableFamilyUnspecified:
-		return "unspec"
-	case nftlib.TableFamilyINet:
-		return "inet"
-	case nftlib.TableFamilyIPv4:
-		return "ip"
-	case nftlib.TableFamilyIPv6:
-		return "ip6"
-	case nftlib.TableFamilyARP:
-		return "arp"
-	case nftlib.TableFamilyNetdev:
-		return "netdev"
-	case nftlib.TableFamilyBridge:
-		return "bridge"
-	}
-	return fmt.Sprintf("family(%v)", f)
 }

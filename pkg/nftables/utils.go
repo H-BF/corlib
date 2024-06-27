@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 
 	rc "github.com/H-BF/corlib/pkg/net/resources"
+
 	"github.com/c-robinson/iplib"
 	nftlib "github.com/google/nftables"
 )
