@@ -19,7 +19,7 @@ func WhenSignalExit(f ...func() error) {
 
 // AtExitManager ...
 type AtExitManager struct {
-	sync.Mutex
+	mx           sync.Mutex
 	closeOnce    sync.Once
 	closed       chan struct{}
 	rip          []func() error
@@ -36,8 +36,8 @@ func NewAtExitManager() *AtExitManager {
 
 // WhenSignalExit register RIP functions
 func (c *AtExitManager) WhenSignalExit(f ...func() error) {
-	c.Lock()
-	defer c.Unlock()
+	c.mx.Lock()
+	defer c.mx.Unlock()
 	if c.isClosing {
 		return
 	}
@@ -45,7 +45,7 @@ func (c *AtExitManager) WhenSignalExit(f ...func() error) {
 		c.obs = observer.NewObserver(func(event observer.EventType) {
 			sig := event.(SignalFromOS)
 			switch sig.Signal {
-			case syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGABRT:
+			case syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGABRT:
 				_ = c.Close()
 			}
 		}, true, SignalFromOS{})
@@ -71,11 +71,11 @@ func (c *AtExitManager) Close() error {
 		SubjOfSignalsFromOS().ObserversDetach(c.obs)
 		c.obs = nil
 		defer close(c.closed)
-		c.Lock()
+		c.mx.Lock()
 		c.isClosing = true
 		funcs := c.rip
 		c.rip = nil
-		c.Unlock()
+		c.mx.Unlock()
 		errs := make([]error, 0, len(funcs))
 		for _, f := range funcs {
 			if e := f(); e != nil {

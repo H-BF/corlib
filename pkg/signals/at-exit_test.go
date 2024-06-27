@@ -16,7 +16,7 @@ func Test_WhenSignalExit(t *testing.T) {
 		return nil
 	})
 	p, _ := os.FindProcess(os.Getpid())
-	e := p.Signal(syscall.SIGHUP)
+	e := p.Signal(syscall.SIGINT)
 	assert.NoError(t, e)
 	if e != nil {
 		return
