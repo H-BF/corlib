@@ -25,11 +25,11 @@ type (
 		isWatcherOption()
 	}
 
-	scopeOfUpdates uint32
+	scopeOfUpdates uint32 //nolint:unused
 )
 
 const (
-	scopeNone scopeOfUpdates = (1 << iota) >> 1
+	scopeNone scopeOfUpdates = (1 << iota) >> 1 //nolint:unused
 
 	//IgnoreLinks does not send 'Links'
 	IgnoreLinks
@@ -41,4 +41,4 @@ const (
 func (WithNetnsName) isLinkListerOpt()  {}
 func (WithNetnsName) isWatcherOption()  {}
 func (WithLinger) isWatcherOption()     {}
-func (scopeOfUpdates) isWatcherOption() {}
+func (scopeOfUpdates) isWatcherOption() {} //nolint:unused

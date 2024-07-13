@@ -10,54 +10,60 @@ import (
 	"time"
 
 	"github.com/H-BF/corlib/pkg/functional"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_FromDefaultValuesConf(t *testing.T) {
 	const (
-		b  ValueT[bool]          = "values/bool"
-		s  ValueT[string]        = "values/string"
-		ti ValueT[time.Time]     = "values/time"
-		du ValueT[time.Duration] = "values/duration"
-		i  ValueT[int]           = "values/int"
-		u  ValueT[uint]          = "values/uint"
-		f  ValueT[float32]       = "values/float"
+		b   ValueT[bool]          = "values/bool"
+		s   ValueT[string]        = "values/string"
+		ti  ValueT[time.Time]     = "values/time"
+		du  ValueT[time.Duration] = "values/duration"
+		i   ValueT[int]           = "values/int"
+		u   ValueT[uint]          = "values/uint"
+		f   ValueT[float32]       = "values/float"
+		uid ValueT[UUID]          = "values/UUID"
 	)
 
-	expected := map[string]interface{}{
-		b.String():  true,
-		s.String():  "string",
-		ti.String(): time.Now(),
-		du.String(): time.Minute,
-		i.String():  int(1),
-		u.String():  uint(1),
-		f.String():  float32(1.0),
+	expected := map[string]struct {
+		k ValueAccessorKeyType
+		v any
+	}{
+		b.String():   {b, true},
+		s.String():   {s, "string"},
+		ti.String():  {ti, time.Now()},
+		du.String():  {du, time.Minute},
+		i.String():   {i, int(1)},
+		u.String():   {u, uint(1)},
+		f.String():   {f, float32(1.0)},
+		uid.String(): {uid, uuid.MustParse("cc36cb4a-08d5-45fa-9006-6421d6e35ee4")},
 	}
-
 	opts := make([]Option, 0, len(expected))
-	for k, v := range expected {
-		opts = append(opts, WithDefValue{Key: k, Val: v})
+	for _, v := range expected {
+		opts = append(opts, WithDefValue(v.k, v.v))
 	}
 	err := InitGlobalConfig(opts...)
 	require.NoError(t, err)
 
 	ctx := context.TODO()
-	for k, v := range expected {
-		g := String2ValueT[interface{}](k)
+	for _, v := range expected {
+		g := String2ValueT[interface{}](v.k.String())
 		v1, e := g.Value(ctx)
 		require.NoError(t, e)
-		require.Equal(t, v, v1)
+		require.Equal(t, v.v, v1)
 	}
 
 	invokers := map[string]interface{}{
-		b.String():  b.Value,
-		s.String():  s.Value,
-		ti.String(): ti.Value,
-		du.String(): du.Value,
-		i.String():  i.Value,
-		u.String():  u.Value,
-		f.String():  f.Value,
+		b.String():   b.Value,
+		s.String():   s.Value,
+		ti.String():  ti.Value,
+		du.String():  du.Value,
+		i.String():   i.Value,
+		u.String():   u.Value,
+		f.String():   f.Value,
+		uid.String(): uid.Value,
 	}
 
 	for k, inv := range invokers {
@@ -67,7 +73,7 @@ func Test_FromDefaultValuesConf(t *testing.T) {
 		if e, _ = res[1].(error); !assert.NoError(t, e) {
 			return
 		}
-		require.Equal(t, expected[k], res[0])
+		require.Equal(t, expected[k].v, res[0])
 	}
 }
 
@@ -95,6 +101,7 @@ func Test_SourceConf(t *testing.T) {
 values:
    bool: true
    duration: 1s
+   uid: cc36cb4a-08d5-45fa-9006-6421d6e35ee4
 `
 
 	err := InitGlobalConfig(WithSource{
@@ -106,14 +113,21 @@ values:
 		return
 	}
 	const (
-		b  ValueT[bool]          = "values/bool"
-		du ValueT[time.Duration] = "values/duration"
+		b   ValueT[bool]          = "values/bool"
+		du  ValueT[time.Duration] = "values/duration"
+		uid ValueT[UUID]          = "values/uid"
 	)
 	ctx := context.TODO()
 	_, err = b.Value(ctx)
 	require.NoError(t, err)
 	_, err = du.Value(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
+	_, err = uid.Value(ctx)
+	require.NoError(t, err)
+
+	expUid := uuid.MustParse("cc36cb4a-08d5-45fa-9006-6421d6e35ee4")
+	actUid, _ := uid.Value(ctx)
+	require.Equal(t, expUid, actUid)
 }
 
 func Test_NetCIDR_Json(t *testing.T) {

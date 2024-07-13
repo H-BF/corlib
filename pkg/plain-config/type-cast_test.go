@@ -4,7 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_typeCastFunc(t *testing.T) {
@@ -17,6 +18,7 @@ func Test_typeCastFunc(t *testing.T) {
 	)
 
 	data := [...]func() error{
+		new(typeCastFunc[UUID]).load,
 		new(typeCastFunc[int]).load,
 		new(typeCastFunc[uint]).load,
 		new(typeCastFunc[int64]).load,
@@ -40,11 +42,47 @@ func Test_typeCastFunc(t *testing.T) {
 		new(typeCastFunc[ii32]).load,
 	}
 	for i := range data {
-		assert.NoError(t, data[i]())
+		require.NoError(t, data[i]())
 	}
+
+	var x typeCastFunc[UUID]
+	x.load()
+	x("cc36cb4a-08d5-45fa-9006-6421d6e35ee4")
+
 	/*//
 	assert.ErrorIs(t,
 		new(typeCastFunc[struct{ a int }]).load(),
 		ErrTypeCastNotSupported)
 	*/
+}
+
+func Test_UUID(t *testing.T) {
+	cases := []struct {
+		v           any
+		expect2fail bool
+	}{
+		{"", true},
+		{uuid.UUID{}, false},
+		{"cc36cb4a-08d5-45fa-9006-6421d6e35ee4", false},
+		{[]byte("cc36cb4a-08d5-45fa-9006-6421d6e35ee4"), false},
+		{[]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, true},
+		{[15]uint8{}, true},
+		{[16]uint8{}, false},
+		{[17]uint8{}, true},
+
+		{[15]int8{}, true},
+		{[16]int8{}, true},
+		{[17]int8{}, true},
+
+		{0, true},
+	}
+	for i := range cases {
+		c := cases[i]
+		_, e := cast2uuid(c.v)
+		if c.expect2fail {
+			require.Errorf(t, e, "case #%v on value(%v)", i, c.v)
+		} else {
+			require.NoErrorf(t, e, "case #%v on value(%v)", i, c.v)
+		}
+	}
 }

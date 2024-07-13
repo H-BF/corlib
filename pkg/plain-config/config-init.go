@@ -4,7 +4,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"sync/atomic"
 
@@ -35,11 +34,10 @@ type (
 		Type   string
 	}
 
-	//WithDefValue option
-	WithDefValue struct {
+	defKeyValue struct {
 		Option
-		Key interface{}
-		Val interface{}
+		key string
+		val any
 	}
 
 	//WithAcceptEnvironment option
@@ -48,6 +46,14 @@ type (
 		EnvPrefix string
 	}
 )
+
+// WithDefValue -
+func WithDefValue[T ValueAccessorKeyType](key T, v any) Option {
+	return defKeyValue{
+		key: key.String(),
+		val: v,
+	}
+}
 
 func configStore() *viper.Viper {
 	ret, _ := globalConfig.Load().(*viper.Viper)
@@ -61,17 +67,10 @@ func InitGlobalConfig(opts ...Option) error {
 	cfgHolder := viper.NewWithOptions(viper.KeyDelimiter("/"),
 		viper.EnvKeyReplacer(strings.NewReplacer("/", "_")))
 
-	keyType := reflect.TypeOf((*string)(nil)).Elem()
-
 	for _, opt := range opts {
 		switch t := opt.(type) {
-		case WithDefValue:
-			if !reflect.TypeOf(t.Key).ConvertibleTo(keyType) {
-				return errors.Wrapf(errors.New("no possible set default with key)"),
-					"%s: key type '%T'", api, t)
-			}
-			k := reflect.ValueOf(t.Key).Convert(keyType).Interface().(string)
-			cfgHolder.SetDefault(k, t.Val)
+		case defKeyValue:
+			cfgHolder.SetDefault(t.key, t.val)
 		case WithSourceFile:
 			if len(t.FileName) == 0 {
 				break

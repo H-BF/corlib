@@ -2,7 +2,6 @@ package plain_config
 
 import (
 	"reflect"
-	"time"
 
 	"github.com/H-BF/corlib/pkg/functional"
 	"github.com/pkg/errors"
@@ -10,21 +9,9 @@ import (
 	"go.uber.org/multierr"
 )
 
-// KnownValueTypes ...
-type KnownValueTypes interface {
-	time.Time |
-		NetCIDR |
-		~[]NetCIDR |
-		IP |
-		~[]IP |
-		~int | ~uint |
-		~int64 | ~uint64 |
-		~int32 | ~uint32 |
-		~int16 | ~uint16 |
-		~int8 | ~uint8 |
-		~float32 | ~float64 |
-		~string | ~bool |
-		~[]string
+// RegisterTypeCast -
+func RegisterTypeCast[T any](f func(any) (T, error)) {
+	regTypeCastFunc(typeCastFunc[T](f), false)
 }
 
 func typeCast[T any](in any, ret *T) error {
@@ -80,7 +67,7 @@ var (
 	typeCastInvokers = make(map[reflect.Type]functional.Callable)
 )
 
-func constructTypeCastInvoker[T KnownValueTypes](c typeCastFunc[T]) functional.Callable {
+func constructTypeCastInvoker[T any](c typeCastFunc[T]) functional.Callable {
 	return functional.MustCallableOf(
 		func(in interface{}, ret *interface{}, err *error) {
 			*ret, *err = c(in)
@@ -88,44 +75,46 @@ func constructTypeCastInvoker[T KnownValueTypes](c typeCastFunc[T]) functional.C
 	)
 }
 
-func regTypeCastFunc[T KnownValueTypes](c typeCastFunc[T]) {
+func regTypeCastFunc[T any](c typeCastFunc[T], failIfOverride bool) {
 	var a *T
 	ty := reflect.TypeOf(a).Elem()
-	if typeCastInvokers[ty] != nil {
+	if failIfOverride && typeCastInvokers[ty] != nil {
 		panic(errors.Errorf("('%v') type cast is always registered", ty))
 	}
 	typeCastInvokers[ty] = constructTypeCastInvoker(c)
 }
 
 func init() {
-	regTypeCastFunc(cast.ToBoolE)
+	regTypeCastFunc(cast.ToBoolE, true)
 
-	regTypeCastFunc(cast.ToInt8E)
-	regTypeCastFunc(cast.ToInt16E)
-	regTypeCastFunc(cast.ToInt32E)
-	regTypeCastFunc(cast.ToInt64E)
+	regTypeCastFunc(cast.ToInt8E, true)
+	regTypeCastFunc(cast.ToInt16E, true)
+	regTypeCastFunc(cast.ToInt32E, true)
+	regTypeCastFunc(cast.ToInt64E, true)
 
-	regTypeCastFunc(cast.ToUint8E)
-	regTypeCastFunc(cast.ToUint16E)
-	regTypeCastFunc(cast.ToUint32E)
-	regTypeCastFunc(cast.ToUint64E)
+	regTypeCastFunc(cast.ToUint8E, true)
+	regTypeCastFunc(cast.ToUint16E, true)
+	regTypeCastFunc(cast.ToUint32E, true)
+	regTypeCastFunc(cast.ToUint64E, true)
 
-	regTypeCastFunc(cast.ToIntE)
-	regTypeCastFunc(cast.ToUintE)
+	regTypeCastFunc(cast.ToIntE, true)
+	regTypeCastFunc(cast.ToUintE, true)
 
-	regTypeCastFunc(cast.ToStringE)
+	regTypeCastFunc(cast.ToStringE, true)
 
-	regTypeCastFunc(cast.ToFloat32E)
-	regTypeCastFunc(cast.ToFloat64E)
+	regTypeCastFunc(cast.ToFloat32E, true)
+	regTypeCastFunc(cast.ToFloat64E, true)
 
-	regTypeCastFunc(cast.ToDurationE)
-	regTypeCastFunc(cast.ToTimeE)
+	regTypeCastFunc(cast.ToDurationE, true)
+	regTypeCastFunc(cast.ToTimeE, true)
 
-	regTypeCastFunc(typeCastNetCIDR)
-	regTypeCastFunc(typeCastNetCIDRSlice)
+	regTypeCastFunc(typeCastNetCIDR, true)
+	regTypeCastFunc(typeCastNetCIDRSlice, true)
 
-	regTypeCastFunc(typeCastIP)
-	regTypeCastFunc(typeCastIPSlice)
+	regTypeCastFunc(typeCastIP, true)
+	regTypeCastFunc(typeCastIPSlice, true)
 
-	regTypeCastFunc(typeCastSliceT[string])
+	regTypeCastFunc(typeCastSliceT[string], true)
+
+	regTypeCastFunc(cast2uuid, true)
 }

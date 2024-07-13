@@ -15,8 +15,8 @@ else
 endif
 
 # install linter tool
-.PHONY: install-linter
-install-linter: ##install linter tool
+.PHONY: .install-linter
+install-linter: 
 ifeq ($(filter $(GOLANGCI_CUR_VERSION), $(GOLANGCI_LATEST_VERSION)),)
 	$(info Cur linter varsion '$(GOLANGCI_CUR_VERSION)' - installing  '$(GOLANGCI_LATEST_VERSION)'...)
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s $(GOLANGCI_LATEST_VERSION)
@@ -27,7 +27,7 @@ endif
 
 # run full lint like in pipeline
 .PHONY: lint
-lint: install-linter	
+lint: .install-linter	
 	@$(GOLANGCI_BIN) cache clean && \
 	$(GOLANGCI_BIN) run --config=$(CURDIR)/.golangci.yaml -v $(CURDIR)/...
 

@@ -7,16 +7,25 @@ import (
 )
 
 type (
+	// ValueAccessorType -
+	ValueAccessorKeyType interface {
+		isValueAccessorKey()
+		String() string
+	}
+
 	//ValueT typed value accessor
 	ValueT[T any] string
 )
 
 var _ Value[int] = (*ValueT[int])(nil)
+var _ ValueAccessorKeyType = (*ValueT[int])(nil)
 
 // String2ValueT ...
 func String2ValueT[T any](s string) ValueT[T] {
 	return ValueT[T](s)
 }
+
+func (v ValueT[T]) isValueAccessorKey() {}
 
 // OptDefaulter ...
 func (v ValueT[T]) OptDefaulter(f func() (T, error)) ValueOpt[T] {
