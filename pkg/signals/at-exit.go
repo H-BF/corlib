@@ -14,7 +14,7 @@ import (
 
 // WhenSignalExit adds `func() error` callback to the globalCloser
 func WhenSignalExit(f ...func() error) {
-	globalAtExitManager.Value().(*AtExitManager).WhenSignalExit(f...)
+	globalAtExitManager.Value().WhenSignalExit(f...)
 }
 
 // AtExitManager ...
@@ -88,7 +88,5 @@ func (c *AtExitManager) Close() error {
 }
 
 var (
-	globalAtExitManager = lazy.MakeInitializer(func() interface{} {
-		return NewAtExitManager()
-	})
+	globalAtExitManager = lazy.MakeInitializer(NewAtExitManager)
 )

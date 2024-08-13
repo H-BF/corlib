@@ -5,47 +5,40 @@ import (
 	"sync/atomic"
 )
 
+// ValOrErr -
+type ValOrErr[T any] struct {
+	Val T
+	Err error
+}
+
 // Initializer holds effective lazy init algorithm
-type Initializer interface {
-	Value() interface{}
+type Initializer[T any] interface {
+	Value() T
 }
 
 // MakeInitializer get effective lazy init algorithm
-func MakeInitializer(initializer func() interface{}) Initializer {
-	type fetcherFunc func() interface{}
-	var (
-		once   sync.Once
-		holder atomic.Value
-		value  interface{}
-		fetch  fetcherFunc = func() interface{} {
-			return value
-		}
-		lazyFetch fetcherFunc = func() interface{} {
-			once.Do(func() {
-				if initializer != nil {
-					value = initializer()
-				}
-				holder.Store(fetch)
-			})
-			return value
-		}
-	)
-	holder.Store(lazyFetch)
-	return &initializerImpl{
-		valueGetter: func() (ret interface{}) {
-			switch get := holder.Load().(type) {
-			case fetcherFunc:
-				ret = get()
-			}
-			return
-		},
-	}
+func MakeInitializer[T any](initializer func() T) Initializer[T] {
+	type fetcherFunc = func() T
+	var holder atomic.Value
+	var once sync.Once
+	var value T
+	holder.Store(fetcherFunc(func() T {
+		once.Do(func() {
+			defer holder.Store(fetcherFunc(func() T {
+				return value
+			}))
+			value = initializer()
+		})
+		return value
+	}))
+	return initializerImpl[T](func() T {
+		return holder.Load().(fetcherFunc)()
+	})
 }
 
-type initializerImpl struct {
-	valueGetter func() interface{}
-}
+type initializerImpl[T any] func() T
 
-func (impl *initializerImpl) Value() interface{} {
-	return impl.valueGetter()
+// Value -
+func (impl initializerImpl[T]) Value() T {
+	return impl()
 }
