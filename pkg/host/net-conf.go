@@ -1,15 +1,8 @@
 package host
 
 import (
-	"bytes"
-	"crypto/md5" //nolint:gosec
-	"net"
-	"sort"
-
 	"github.com/H-BF/corlib/pkg/dict"
 	"github.com/H-BF/corlib/pkg/nl"
-	"github.com/H-BF/corlib/pkg/slice"
-	"github.com/c-robinson/iplib"
 )
 
 type (
@@ -17,26 +10,7 @@ type (
 	UpdStrategy uint
 
 	//LinkID link ID dev
-	LinkID = int
-
-	//LinkRefs link refs
-	LinkRefs struct {
-		dict.HSet[LinkID]
-	}
-
-	//IpAddr ip address
-	IpAddr struct { //nolint:revive
-		net.IPNet
-		Links LinkRefs
-	}
-
-	//IPAdressesMapKey md5 from IpAddr.IPNet
-	IPAdressesMapKey [md5.Size]byte
-
-	//IPAdresses ip addresses
-	IPAdresses struct {
-		dict.HDict[IPAdressesMapKey, *IpAddr]
-	}
+	LinkID int
 
 	//IpDev ip device
 	IpDev struct { //nolint:revive
@@ -51,8 +25,8 @@ type (
 
 	//NetConf network conf
 	NetConf struct {
-		IpDevs
-		IPAdresses
+		Devs     IpDevs
+		Adresses LinkAddresses
 	}
 )
 
@@ -64,104 +38,21 @@ const (
 	Delete
 )
 
-// Upd modifies references
-func (r *LinkRefs) Upd(ref LinkID, howUpd UpdStrategy) {
-	switch howUpd {
-	case Update:
-		r.Put(ref)
-	case Delete:
-		r.Del(ref)
-	default:
-		panic("UB")
-	}
-}
-
-// Clone makes a copy
-func (r LinkRefs) Clone() LinkRefs {
-	var ret LinkRefs
-	r.Iterate(ret.Insert)
-	return ret
-}
-
-// Eq -
-func (r LinkRefs) Eq(other LinkRefs) bool {
-	return r.HSet.Eq(&other.HSet)
-}
-
-// Eq -
-func (a IpAddr) Eq(b IpAddr) bool {
-	return a.IP.Equal(b.IP) &&
-		bytes.Equal(a.Mask, b.Mask) &&
-		a.Links.Eq(b.Links)
-}
-
-// Key make map key
-func (a IpAddr) Key() IPAdressesMapKey {
-	s := append(
-		append([]byte{}, a.IP.To16()...),
-		a.Mask...,
-	)
-	return md5.Sum(s) //nolint:gosec
-}
-
-// Clone makes a copy
-func (a IpAddr) Clone() IpAddr {
-	ret := IpAddr{
-		Links: a.Links.Clone(),
-	}
-	ret.IP = iplib.CopyIP(ret.IP)
-	ret.Mask = append(ret.Mask, a.Mask...)
-	return ret
-}
-
-// Upd upfdate with IP
-func (a *IPAdresses) Upd(lnk LinkID, addr net.IPNet, how UpdStrategy) {
-	x := IpAddr{IPNet: addr}
-	k := x.Key()
-	o := a.At(k)
-	switch how {
-	case Update:
-		if o == nil {
-			o = &x
-		}
-		o.Links.Upd(lnk, Update)
-		a.Put(k, o)
-	case Delete:
-		if o != nil {
-			o.Links.Upd(lnk, Delete)
-			if o.Links.Len() == 0 {
-				a.Del(k)
-			}
-		}
-	default:
-		panic("UB")
-	}
-}
-
-// Clone makes a copy
-func (a IPAdresses) Clone() IPAdresses {
-	var ret IPAdresses
-	a.Iterate(ret.Insert)
-	return ret
-}
-
-// Eq -
-func (a IPAdresses) Eq(b IPAdresses) bool {
-	return a.HDict.Eq(&b.HDict, func(vL, vR *IpAddr) bool {
-		return vL.Eq(*vR)
-	})
-}
-
 // Upd update devs
-func (devs *IpDevs) Upd(d IpDev, how UpdStrategy) {
+func (devs *IpDevs) Upd(d IpDev, how UpdStrategy) bool {
 	switch how {
 	case Update:
-		devs.Put(d.ID, d)
+		if v, ok := devs.Get(d.ID); ok && !(v == d) {
+			devs.Put(d.ID, d)
+		}
 	case Delete:
+		n := devs.Len()
 		devs.Del(d.ID)
+		return n-devs.Len() > 0
 	default:
 		panic("UB")
 	}
+	return true
 }
 
 // Clone makes a copy
@@ -180,59 +71,58 @@ func (devs IpDevs) Eq(other IpDevs) bool {
 
 // Eq -
 func (conf NetConf) Eq(other NetConf) bool {
-	return conf.IpDevs.Eq(other.IpDevs) &&
-		conf.IPAdresses.Eq(other.IPAdresses)
+	return conf.Devs.Eq(other.Devs) &&
+		conf.Adresses.Eq(other.Adresses)
 }
 
 // Clone -
 func (conf NetConf) Clone() NetConf {
 	return NetConf{
-		IPAdresses: conf.IPAdresses.Clone(),
-		IpDevs:     conf.IpDevs.Clone(),
+		Adresses: conf.Adresses.Clone(),
+		Devs:     conf.Devs.Clone(),
 	}
 }
 
 // LocalIPs get effective local unique IP lists
-func (conf NetConf) LocalIPs() (IPv4 []net.IP, IPv6 []net.IP) {
-	conf.IPAdresses.Iterate(func(_ IPAdressesMapKey, a *IpAddr) bool {
-		switch len(a.IP) {
-		case net.IPv4len:
-			IPv4 = append(IPv4, a.IP)
-		case net.IPv6len:
-			IPv6 = append(IPv6, a.IP)
-		}
+func (conf NetConf) LocalIPs() (ip4set IPvSet[IP4], ip6set IPvSet[IP6]) {
+	conf.Adresses.IPSets.Iterate(func(_ LinkID, v IPSet) bool {
+		v.IPs.Iterate(func(ip IPAddr) bool {
+			if ip.Is4() {
+				ip4set.Put(ip.As4())
+			} else if ip.Is6() {
+				ip6set.Put(ip.As16())
+			}
+			return true
+		})
 		return true
 	})
-	type iplist = []net.IP
-	for _, ips := range []*iplist{&IPv4, &IPv6} {
-		sort.Sort(iplib.ByIP(*ips))
-		_ = slice.DedupSlice(ips, func(i, j int) bool {
-			return iplib.CompareIPs((*ips)[i], (*ips)[j]) == 0
-		})
-	}
-	return IPv4, IPv6
+	return ip4set, ip6set
 }
 
 // UpdFromWatcher updates conf with messages came from netlink-watcher
-func (conf *NetConf) UpdFromWatcher(msgs ...nl.WatcherMsg) {
-	for _, m := range msgs {
-		switch v := m.(type) {
+func (conf *NetConf) UpdFromWatcher(msgs ...nl.WatcherMsg) bool {
+	var cnt int
+	var ok bool
+	for i := range msgs {
+		switch v := msgs[i].(type) {
 		case nl.AddrUpdateMsg:
-			conf.IPAdresses.Upd(
-				v.LinkIndex,
+			ok = conf.Adresses.Upd(
+				LinkID(v.LinkIndex),
 				v.Address,
 				tern(v.Deleted, Delete, Update))
 		case nl.LinkUpdateMsg:
 			attrs := v.Link.Attrs()
-			conf.IpDevs.Upd(
+			ok = conf.Devs.Upd(
 				IpDev{
-					ID:   attrs.Index,
+					ID:   LinkID(attrs.Index),
 					Name: attrs.Name,
 				},
 				tern(v.Deleted, Delete, Update),
 			)
 		}
+		cnt += tern(ok, 1, 0)
 	}
+	return cnt > 0
 }
 
 func tern[tval any](cond bool, v1, v2 tval) tval {
