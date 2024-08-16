@@ -19,8 +19,5 @@ func (NullObserver) UnsubscribeEvents(...EventType) {}
 // UnsubscribeAllEvents - impl Observer iface
 func (NullObserver) UnsubscribeAllEvents() {}
 
-func (NullObserver) observe(...EventType) {}
-
-func (NullObserver) canRunAsync() bool {
-	return false
-}
+// Observe -
+func (NullObserver) Observe(...EventType) {}
