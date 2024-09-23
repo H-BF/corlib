@@ -9,6 +9,8 @@ import (
 func Test_Set(t *testing.T) {
 	var h HSet[int]
 	var r RBSet[int]
+	_ = h.Values()
+	_ = r.Values()
 	n := h.Len()
 	require.Equal(t, 0, n)
 	n = r.Len()

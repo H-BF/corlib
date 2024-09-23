@@ -29,38 +29,38 @@ func (hDictFactory[Tk, Tv]) construct() Dict[Tk, Tv] { //nolint:unused
 }
 
 type impSet[T any, F factoryOfDict[T, struct{}]] struct {
-	Dict[T, struct{}]
+	inner Dict[T, struct{}]
 }
 
 func (set *impSet[T, F]) init() {
-	if set.Dict == nil {
+	if set.inner == nil {
 		var f F
-		set.Dict = f.construct()
+		set.inner = f.construct()
 	}
 }
 
 // Clear -
 func (set *impSet[T, F]) Clear() {
 	set.init()
-	set.Dict.Clear()
+	set.inner.Clear()
 }
 
 // Len -
 func (set *impSet[T, F]) Len() int {
 	set.init()
-	return set.Dict.Len()
+	return set.inner.Len()
 }
 
 // Del -
 func (set *impSet[T, F]) Del(keys ...T) {
 	set.init()
-	set.Dict.Del(keys...)
+	set.inner.Del(keys...)
 }
 
 // Put -
 func (set *impSet[T, F]) Put(k T) {
 	set.init()
-	set.Dict.Put(k, struct{}{})
+	set.inner.Put(k, struct{}{})
 }
 
 // PutMany -
@@ -68,7 +68,7 @@ func (set *impSet[T, F]) PutMany(vals ...T) {
 	if len(vals) > 0 {
 		set.init()
 		for _, k := range vals {
-			set.Dict.Put(k, struct{}{})
+			set.inner.Put(k, struct{}{})
 		}
 	}
 }
@@ -76,20 +76,20 @@ func (set *impSet[T, F]) PutMany(vals ...T) {
 // Insert -
 func (set *impSet[T, F]) Insert(k T) bool {
 	set.init()
-	return set.Dict.Insert(k, struct{}{})
+	return set.inner.Insert(k, struct{}{})
 }
 
 // Contains -
 func (set *impSet[T, F]) Contains(k T) bool {
 	set.init()
-	_, ok := set.Dict.Get(k)
+	_, ok := set.inner.Get(k)
 	return ok
 }
 
 // Iterate -
 func (set *impSet[T, F]) Iterate(f func(k T) bool) {
 	set.init()
-	set.Dict.Iterate(func(k T, _ struct{}) bool {
+	set.inner.Iterate(func(k T, _ struct{}) bool {
 		return f(k)
 	})
 }
