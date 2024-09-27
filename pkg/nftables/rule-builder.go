@@ -14,14 +14,16 @@ import (
 	nftlib "github.com/google/nftables"
 	bu "github.com/google/nftables/binaryutil"
 	"github.com/google/nftables/expr"
+	userdata "github.com/google/nftables/userdata"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 )
 
 // RuleBuilder -
 type RuleBuilder struct {
-	sets  di.HDict[uint32, NfSet]
-	exprs []expr.Any
+	sets    di.HDict[uint32, NfSet]
+	exprs   []expr.Any
+	comment string
 }
 
 // ApplyRule -
@@ -34,11 +36,15 @@ func (rb RuleBuilder) ApplyRule(chn *nftlib.Chain, c *nftlib.Conn) {
 			}
 			return true
 		})
-		_ = c.AddRule(&nftlib.Rule{
+		rule := nftlib.Rule{
 			Table: chn.Table,
 			Chain: chn,
 			Exprs: rb.exprs,
-		})
+		}
+		if len(rb.comment) > 0 {
+			rule.UserData = userdata.AppendString(rule.UserData, userdata.TypeComment, rb.comment)
+		}
+		_ = c.AddRule(&rule)
 	}
 }
 
@@ -479,6 +485,17 @@ func (rb RuleBuilder) NDPI(dom rc.FQDN, protocols ...string) RuleBuilder { //nol
 	}
 	rb.exprs = append(rb.exprs, n)
 	return rb
+}
+
+// Comment -
+func (rb RuleBuilder) Comment(comment string) RuleBuilder {
+	rb.comment = comment
+	return rb
+}
+
+// SetComment -
+func (rb *RuleBuilder) SetComment(comment string) {
+	rb.comment = comment
 }
 
 // PutSet -
