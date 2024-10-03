@@ -86,6 +86,16 @@ func (set *impSet[T, F]) Contains(k T) bool {
 	return ok
 }
 
+// ContainsAny -
+func (set *impSet[T, F]) ContainsAny(k ...T) (ok bool) {
+	for _, v := range k {
+		if ok = set.Contains(v); ok {
+			break
+		}
+	}
+	return ok
+}
+
 // Iterate -
 func (set *impSet[T, F]) Iterate(f func(k T) bool) {
 	set.init()

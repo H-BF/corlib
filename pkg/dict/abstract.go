@@ -34,6 +34,7 @@ type (
 		PutMany(vals ...T)
 		Insert(k T) bool
 		Contains(k T) bool
+		ContainsAny(k ...T) bool
 		Iterate(f func(k T) bool)
 		Values() []T
 		Eq(Set[T]) bool
