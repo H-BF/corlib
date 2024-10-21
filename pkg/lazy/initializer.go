@@ -22,15 +22,15 @@ func MakeInitializer[T any](initializer func() T) Initializer[T] {
 	var holder atomic.Value
 	var once sync.Once
 	var value T
-	holder.Store(fetcherFunc(func() T {
+	holder.Store(func() T {
 		once.Do(func() {
-			defer holder.Store(fetcherFunc(func() T {
+			defer holder.Store(func() T {
 				return value
-			}))
+			})
 			value = initializer()
 		})
 		return value
-	}))
+	})
 	return initializerImpl[T](func() T {
 		return holder.Load().(fetcherFunc)()
 	})
