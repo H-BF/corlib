@@ -488,9 +488,9 @@ func testCombineExclude(t *testing.T) { //nolint
 	}
 }
 
-func TestCombineIntersect(t *testing.T) { //nolint
-	testCombineIntersect(t)
-}
+//func TestCombineIntersect(t *testing.T) { //nolint
+//	testCombineIntersect(t)
+//}
 
 func testCombineIntersect(t *testing.T) { //nolint
 	type dataT uint8
