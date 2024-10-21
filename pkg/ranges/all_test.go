@@ -26,6 +26,7 @@ func TestRangesAll(t *testing.T) {
 		{"ParseMultiRange", testParseMultiRange},
 		{"CombineMerge", testCombineMerge},
 		{"CombineExclude", testCombineExclude},
+		{"CombineIntersect", testCombineIntersect},
 		{"MultiRangeUpdate", testMultiRangeUpdate},
 		{"MultiRangeSearch", testMultiRangeSearch},
 	}
@@ -482,6 +483,67 @@ func testCombineExclude(t *testing.T) { //nolint
 				require.NoError(t, err)
 				return true
 			}, CombineExclude, values...)
+		require.Equalf(t, c.expected, buf.String(), "%v) case '%s'", i, c.c)
+		buf.Reset()
+	}
+}
+
+func TestCombineIntersect(t *testing.T) { //nolint
+	testCombineIntersect(t)
+}
+
+func testCombineIntersect(t *testing.T) { //nolint
+	type dataT uint8
+
+	cases := []struct {
+		c        string
+		expected string
+	}{
+		{"[10,9]", ""},
+		{"(10,10)", ""},
+		{"[10,11][12,15]", ""},
+		{"(8,22)(10,12)", "[11,12)"},
+		{"(8,22)(20,30)", "[21,22)"},
+		{"(8,22)[21,30)", "[21,22)"},
+		{"[10,20][21,30][40,60][41,50]", "[41,51)"},
+
+		{"[10,20](9,20](9,21)[10,21)", "[10,21)"},
+		{"[8,100][10,15][16,30]", "[10,16)[16,31)"},
+		{"(8,100)(10,15)(18,30)", "[11,15)[19,30)"},
+		{"[1,51][21,81][61,100]", "[21,52)[61,82)"},
+		{"[1,51][21,81][61,100][61,100]", "[21,52)[61,101)"},
+		{"[1,100][10,20][15,40][30,130]", "[10,101)"},
+		{"[1,100][10,20][30,130][15,40]", "[10,101)"},
+		{"[0,200][1,100][10,20][30,130][15,40]", "[1,131)"},
+	}
+	buf := bytes.NewBuffer(nil)
+	var values []Range[dataT]
+	for i := range cases { //nolint
+		values = values[:0]
+		c := cases[i]
+		err := ParseMultiRange(c.c,
+			func(src []byte) (Range[dataT], error) {
+				var ret Range[dataT]
+				e := ParseIntsRange(src, &ret)
+				return ret, e
+			},
+			func(i Range[dataT]) bool {
+				values = append(values, i)
+				return true
+			})
+		require.NoErrorf(t, err, "%v) on parsing '%s'", i, cases[i].c)
+		factory := IntsFactory(dataT(0))
+		CombineRanges(
+			func(l, u Bound[dataT]) Range[dataT] {
+				ret := factory.Range(0, false, 0, true)
+				ret.SetBounds(l, u)
+				return ret
+			},
+			func(v Range[dataT]) bool {
+				_, err = fmt.Fprintf(buf, "%s", v)
+				require.NoError(t, err)
+				return true
+			}, CombineIntersect, values...)
 		require.Equalf(t, c.expected, buf.String(), "%v) case '%s'", i, c.c)
 		buf.Reset()
 	}

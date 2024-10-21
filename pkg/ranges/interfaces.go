@@ -54,3 +54,11 @@ type (
 		Range(lower T, lExcluded bool, upper T, uExcluded bool) Range[T]
 	}
 )
+
+// AreRangesEq -
+func AreRangesEq[T any](l, r Range[T]) bool {
+	l1, l2 := l.Bounds()
+	r1, r2 := r.Bounds()
+	return l1.Cmp(r1) == 0 &&
+		l2.Cmp(r2) == 0
+}

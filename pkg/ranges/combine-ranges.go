@@ -13,6 +13,9 @@ const (
 
 	// CombineExclude exclude strategy
 	CombineExclude
+
+	// CombineIntersect intersect strategy
+	CombineIntersect
 )
 
 // CombineRanges combines set of ganges with one of strategy
@@ -42,6 +45,8 @@ func CombineRanges[T any](
 		combineMerge(rangeConstructor, consume, pts)
 	case CombineExclude:
 		combineExclude(rangeConstructor, consume, pts)
+	case CombineIntersect:
+		combineIntersected(rangeConstructor, consume, pts)
 	default:
 		panic("unexpected strategy")
 	}
@@ -95,6 +100,36 @@ func combineExclude[T any](
 		}
 		if v = v.Normalize(); !v.IsNull() && !consume(v) {
 			return
+		}
+	}
+}
+
+func combineIntersected[T any](
+	rangeConstructor func(l, u Bound[T]) Range[T],
+	consume func(Range[T]) bool,
+	sortedBounds []Bound[T],
+) {
+	lowers := make([]int, 0, len(sortedBounds))
+	uppers := make([]int, 0, len(sortedBounds))
+	for i := 0; i < len(sortedBounds); i++ {
+		if b := sortedBounds[i]; b.Is(Lower{}) {
+			lowers = append(lowers, i)
+		} else {
+			uppers = append(uppers, i)
+			switch lf, rt := len(lowers), len(uppers); lf - rt {
+			case 0:
+				lowers, uppers = lowers[:0], uppers[:0]
+			case 1:
+				i1, i2 := lowers[1], uppers[rt-1]
+				if v := rangeConstructor(sortedBounds[i1], sortedBounds[i2]); v != nil {
+					v = v.Normalize()
+					if !v.IsNull() && !consume(v) {
+						return
+					}
+				}
+				uppers = uppers[:0]
+				lowers = append(lowers[:0], lowers[lf-1])
+			}
 		}
 	}
 }

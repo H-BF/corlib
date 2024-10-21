@@ -11,8 +11,8 @@ import (
 
 // Ints integers class for integers ranges
 type Ints interface {
-	uint8 | uint16 | uint32 | uint64 | uint |
-		int8 | int16 | int32 | int64 | int
+	~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uint |
+		~int8 | ~int16 | ~int32 | ~int64 | ~int
 }
 
 // ParseSources parse range source constraint

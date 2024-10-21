@@ -87,3 +87,16 @@ func (mr MultiRange[T]) Search(v T) (int, bool) {
 	})
 	return n, n >= 0 && n < len(mr.ranges) && mr.ranges[n].Contains(v)
 }
+
+// Eq -
+func (mr MultiRange[T]) Eq(other MultiRange[T]) bool {
+	if len(mr.ranges) != len(other.ranges) {
+		return false
+	}
+	for i := range mr.ranges {
+		if r1, r2 := mr.ranges[i], other.ranges[i]; !AreRangesEq(r1, r2) {
+			return false
+		}
+	}
+	return true
+}
