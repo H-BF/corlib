@@ -1,7 +1,9 @@
 package option
 
 import (
+	"encoding/json"
 	"fmt"
+	"unsafe"
 )
 
 // ValueOf optional value holder
@@ -64,4 +66,27 @@ func (val ValueOf[T]) String() string {
 		return "none"
 	}
 	return fmt.Sprintf("%v", val.v)
+}
+
+// MarshalJSON impl json.Marshaler
+func (val ValueOf[T]) MarshalJSON() ([]byte, error) {
+	if !val.some {
+		return []byte("null"), nil
+	}
+	return json.Marshal(val.v)
+}
+
+// UnmarshalJSON impl json.Unmarshaler
+func (val *ValueOf[T]) UnmarshalJSON(data []byte) error {
+	s := unsafe.String(unsafe.SliceData(data), len(data))
+	if s == "null" {
+		val.Unset()
+		return nil
+	}
+	var o T
+	e := json.Unmarshal(data, &o)
+	if e == nil {
+		val.Set(o)
+	}
+	return e
 }
