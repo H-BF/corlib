@@ -76,6 +76,17 @@ func (val ValueOf[T]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(val.v)
 }
 
+// Validate -
+func (val ValueOf[T]) Validate() error {
+	if val.some {
+		v, ok := any(val.v).(interface{ Validate() error })
+		if ok {
+			return v.Validate()
+		}
+	}
+	return nil
+}
+
 // UnmarshalJSON impl json.Unmarshaler
 func (val *ValueOf[T]) UnmarshalJSON(data []byte) error {
 	s := unsafe.String(unsafe.SliceData(data), len(data))
