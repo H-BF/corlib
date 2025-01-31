@@ -7,6 +7,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_FIFO_Len(t *testing.T) {
+	que := NewFIFO[int]()
+	que.Put(10)
+	time.Sleep(time.Second)
+	n := que.Len()
+	require.Equal(t, 1, n)
+	que.Close()
+}
+
 func Test_FIFO(t *testing.T) {
 	f := NewFIFO[any]()
 	r := f.Reader()

@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -32,12 +33,13 @@ var _ FIFO[int] = (*typedFIFO[int])(nil)
 
 // typedFIFO -
 type typedFIFO[T any] struct {
-	data      *list.List
-	close     chan struct{}
-	stopped   chan struct{}
-	ch        chan T
-	cv        *sync.Cond
-	closeOnce sync.Once
+	data        *list.List
+	close       chan struct{}
+	stopped     chan struct{}
+	ch          chan T
+	cv          *sync.Cond
+	sendPending uint32
+	closeOnce   sync.Once
 }
 
 // Len -
@@ -45,7 +47,7 @@ func (que *typedFIFO[T]) Len() int {
 	que.cv.L.Lock()
 	defer que.cv.L.Unlock()
 	if que.data != nil {
-		return que.data.Len()
+		return que.data.Len() + int(atomic.LoadUint32(&que.sendPending))
 	}
 	return 0
 }
@@ -109,11 +111,13 @@ func (que *typedFIFO[T]) run() {
 				runtime.Gosched()
 			}
 		} else {
+			atomic.StoreUint32(&que.sendPending, 1)
 			select {
 			case <-que.close:
 				closed = true
 			case que.ch <- v.(T):
 			}
+			atomic.StoreUint32(&que.sendPending, 0)
 		}
 	}
 }
