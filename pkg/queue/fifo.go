@@ -18,20 +18,16 @@ type FIFO[T any] interface {
 
 // NewFIFO -
 func NewFIFO[T any]() *typedFIFO[T] { //nolint:revive
-	ret := &typedFIFO[T]{
-		data:    list.New(),
-		close:   make(chan struct{}),
-		stopped: make(chan struct{}),
-		ch:      make(chan T),
-		cv:      sync.NewCond(new(sync.Mutex)),
+	return &typedFIFO[T]{
+		data:  list.New(),
+		cv:    sync.NewCond(new(sync.Mutex)),
+		close: make(chan struct{}),
+		ch:    make(chan T),
 	}
-	go ret.run()
-	return ret
 }
 
 var _ FIFO[int] = (*typedFIFO[int])(nil)
 
-// typedFIFO -
 type typedFIFO[T any] struct {
 	data        *list.List
 	close       chan struct{}
@@ -40,9 +36,10 @@ type typedFIFO[T any] struct {
 	cv          *sync.Cond
 	sendPending uint32
 	closeOnce   sync.Once
+	runOnce     sync.Once
 }
 
-// Len -
+// Len impl FIFO[T] interface
 func (que *typedFIFO[T]) Len() int {
 	que.cv.L.Lock()
 	defer que.cv.L.Unlock()
@@ -52,12 +49,16 @@ func (que *typedFIFO[T]) Len() int {
 	return 0
 }
 
-// Reader -
+// Reader impl FIFO[T] interface
 func (que *typedFIFO[T]) Reader() <-chan T {
+	que.runOnce.Do(func() {
+		que.stopped = make(chan struct{})
+		go que.run()
+	})
 	return que.ch
 }
 
-// Put -
+// Put impl FIFO[T] interface
 func (que *typedFIFO[T]) Put(v ...T) (ok bool) {
 	que.cv.L.Lock()
 	defer func() {
@@ -65,6 +66,9 @@ func (que *typedFIFO[T]) Put(v ...T) (ok bool) {
 			que.cv.Broadcast()
 		}
 		que.cv.L.Unlock()
+		if ok {
+			runtime.Gosched()
+		}
 	}()
 	if que.data != nil {
 		for i := range v {
@@ -75,22 +79,28 @@ func (que *typedFIFO[T]) Put(v ...T) (ok bool) {
 	return ok
 }
 
-// Close -
+// Close impl FIFO[T] interface
 func (que *typedFIFO[T]) Close() error {
+	que.runOnce.Do(func() {})
 	stopped := que.stopped
 	cv := que.cv
 	cl := que.close
+	ch := que.ch
 	que.closeOnce.Do(func() {
 		const waitBeforeBroadcast = 100 * time.Millisecond
 		close(cl)
+		defer close(ch)
 		cv.L.Lock()
 		que.data = nil
 		cv.L.Unlock()
-		for cv.Broadcast(); ; cv.Broadcast() {
-			select {
-			case <-stopped:
-				return
-			case <-time.After(waitBeforeBroadcast):
+		if stopped != nil {
+		loop:
+			for cv.Broadcast(); ; cv.Broadcast() {
+				select {
+				case <-stopped:
+					break loop
+				case <-time.After(waitBeforeBroadcast):
+				}
 			}
 		}
 	})
@@ -98,18 +108,10 @@ func (que *typedFIFO[T]) Close() error {
 }
 
 func (que *typedFIFO[T]) run() {
-	defer func() {
-		close(que.ch)
-		close(que.stopped)
-	}()
+	defer close(que.stopped)
 	for closed := false; !closed; {
 		if v, ok := que.fetch(); !ok {
-			select {
-			case <-que.close:
-				closed = true
-			default:
-				runtime.Gosched()
-			}
+			break
 		} else {
 			atomic.StoreUint32(&que.sendPending, 1)
 			select {
@@ -126,18 +128,13 @@ func (que *typedFIFO[T]) fetch() (v any, ok bool) {
 	que.cv.L.Lock()
 	defer que.cv.L.Unlock()
 	data := que.data
-	if data == nil {
-		return v, false
-	}
-	hasData := data.Len() != 0
-	if !hasData {
+	for ; data != nil; data = que.data {
+		if o := data.Front(); o != nil {
+			v, ok = o.Value, true
+			data.Remove(o)
+			break
+		}
 		que.cv.Wait()
-		hasData = data.Len() != 0
-	}
-	if hasData {
-		o := data.Front()
-		v, ok = o.Value, true
-		data.Remove(o)
 	}
 	return v, ok
 }
