@@ -41,20 +41,24 @@ func (set *impSet[T, F]) init() {
 
 // Clear -
 func (set *impSet[T, F]) Clear() {
-	set.init()
-	set.inner.Clear()
+	if set.inner != nil {
+		set.inner.Clear()
+	}
 }
 
 // Len -
 func (set *impSet[T, F]) Len() int {
-	set.init()
+	if set.inner == nil {
+		return 0
+	}
 	return set.inner.Len()
 }
 
 // Del -
 func (set *impSet[T, F]) Del(keys ...T) {
-	set.init()
-	set.inner.Del(keys...)
+	if set.inner != nil {
+		set.inner.Del(keys...)
+	}
 }
 
 // Put -
@@ -67,8 +71,8 @@ func (set *impSet[T, F]) Put(k T) {
 func (set *impSet[T, F]) PutMany(vals ...T) {
 	if len(vals) > 0 {
 		set.init()
-		for _, k := range vals {
-			set.inner.Put(k, struct{}{})
+		for i := range vals {
+			set.inner.Put(vals[i], struct{}{})
 		}
 	}
 }
@@ -80,9 +84,10 @@ func (set *impSet[T, F]) Insert(k T) bool {
 }
 
 // Contains -
-func (set *impSet[T, F]) Contains(k T) bool {
-	set.init()
-	_, ok := set.inner.Get(k)
+func (set *impSet[T, F]) Contains(k T) (ok bool) {
+	if set.inner != nil {
+		_, ok = set.inner.Get(k)
+	}
 	return ok
 }
 
@@ -98,10 +103,11 @@ func (set *impSet[T, F]) ContainsAny(k ...T) (ok bool) {
 
 // Iterate -
 func (set *impSet[T, F]) Iterate(f func(k T) bool) {
-	set.init()
-	set.inner.Iterate(func(k T, _ struct{}) bool {
-		return f(k)
-	})
+	if set.inner != nil {
+		set.inner.Iterate(func(k T, _ struct{}) bool {
+			return f(k)
+		})
+	}
 }
 
 // Values -
