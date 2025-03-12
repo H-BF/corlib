@@ -43,7 +43,7 @@ require (
 	google.golang.org/protobuf v1.33.0
 )
 
-replace github.com/google/nftables v0.3.0 => github.com/H-BF/nftables v0.3.0-dev
+replace github.com/google/nftables v0.3.0 => github.com/H-BF/nftables v0.3.1-dev
 
 replace github.com/vishvananda/netlink v1.3.0 => github.com/H-BF/netlink v1.3.0-dev
 

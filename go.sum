@@ -37,8 +37,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/H-BF/netlink v1.3.0-dev h1:jkU3CicokrzVv7gk6fb0R9uACsBZ1t3241cQyrz0VUo=
 github.com/H-BF/netlink v1.3.0-dev/go.mod h1:52OU3LtmLAR6P7fWhbQa+3oh5y99VFFcBwHfY3tnNKc=
-github.com/H-BF/nftables v0.3.0-dev h1:XECWkkB4G7j/i47enEnY/IOpPC7yLjPLKmv6PaFEIdQ=
-github.com/H-BF/nftables v0.3.0-dev/go.mod h1:iirY5mGIjpb1WYh/33lrangRENlS2wwJYHeKwmJvP+Q=
+github.com/H-BF/nftables v0.3.1-dev h1:sWdvJMLRRc6+QrEIS2hPHxKgxsjaVQw5vsUy9quUSCU=
+github.com/H-BF/nftables v0.3.1-dev/go.mod h1:iirY5mGIjpb1WYh/33lrangRENlS2wwJYHeKwmJvP+Q=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/ahmetb/go-linq/v3 v3.2.0 h1:BEuMfp+b59io8g5wYzNoFe9pWPalRklhlhbiU3hYZDE=
 github.com/ahmetb/go-linq/v3 v3.2.0/go.mod h1:haQ3JfOeWK8HpVxMtHHEMPVgBKiYyQ+f1/kLZh/cj9U=
