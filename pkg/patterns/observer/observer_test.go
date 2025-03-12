@@ -8,14 +8,11 @@ import (
 )
 
 type event1 struct {
-	EventType
+	EventTypeBaseImpl
 	idata int
 }
 
-type event2 struct {
-	EventType
-	sdata string
-}
+type event2 EventTypeT[string]
 
 func Test_Observer(t *testing.T) {
 	subj := NewSubject()
@@ -26,13 +23,13 @@ func Test_Observer(t *testing.T) {
 		case event1:
 			idata = val.idata
 		case event2:
-			sdata = val.sdata
+			sdata = val.Property
 		}
 	}
 	obs1 := NewObserver(rc, false, event1{})
 	obs2 := NewObserver(rc, false, event2{})
 	subj.ObserversAttach(obs1, obs2)
-	subj.Notify(event1{idata: 100500}, event2{sdata: "100500"})
+	subj.Notify(event1{idata: 100500}, event2{Property: "100500"})
 	assert.Equal(t, 100500, idata)
 	assert.Equal(t, "100500", sdata)
 }
@@ -49,7 +46,7 @@ func Test_ObserverAsync(t *testing.T) {
 		case event1:
 			idata = val.idata
 		case event2:
-			sdata = val.sdata
+			sdata = val.Property
 		}
 		mx.Lock()
 		defer mx.Unlock()
@@ -58,7 +55,7 @@ func Test_ObserverAsync(t *testing.T) {
 	}
 	obs1 := NewObserver(rc, true, event1{}, event2{})
 	subj.ObserversAttach(obs1)
-	subj.Notify(event1{idata: 100500}, event2{sdata: "100500"})
+	subj.Notify(event1{idata: 100500}, event2{Property: "100500"})
 	mx.Lock()
 	for i < 2 {
 		cv.Wait()
