@@ -13,10 +13,7 @@ import (
 // RunWithAPIServer add one more API server
 func RunWithAPIServer(endpoint *pkgNet.Endpoint, srv *APIServer) RunAPIServersOption {
 	return runAPIServersOptionsApplier(func(o *runAPIServersOptions) error {
-		nw := endpoint.Network()
-		switch nw {
-		case "tcp", "unix":
-		default:
+		if nw := endpoint.Network(); !pkgNet.AnySchema(nw, pkgNet.SchemeTCP, pkgNet.SchemeUNIX) {
 			return errors.Errorf("unusable network '%s' from endpoint", nw)
 		}
 		o.apiServers = append(o.apiServers, struct {

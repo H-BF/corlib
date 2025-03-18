@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"strings"
 	"testing"
 	"time"
 
@@ -46,9 +45,9 @@ func job4gateway(ctx context.Context, endPoint *netPkg.Endpoint) error {
 		GwEndpointURL: func(_ context.Context) (string, error) {
 			nw := endPoint.Network()
 			switch {
-			case strings.EqualFold(nw, "tcp"):
+			case netPkg.AnySchema(nw, netPkg.SchemeTCP):
 				return string(netPkg.SchemeHTTP) + "://" + endPoint.String(), nil
-			case strings.EqualFold(nw, "unix"):
+			case netPkg.AnySchema(nw, netPkg.SchemeUNIX):
 				return string(netPkg.SchemeUnixHTTP) + "://" + endPoint.String(), nil
 			}
 			return "", errors.Errorf("unsupported tenwork '%s'", nw)

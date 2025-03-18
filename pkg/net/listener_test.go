@@ -2,7 +2,6 @@ package net
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"path"
@@ -33,7 +32,7 @@ func Test_ListenOk(t *testing.T) {
 
 func Test_ListenFailOnFile(t *testing.T) {
 	name := genTestSocketName()
-	err := ioutil.WriteFile(name, []byte{0}, 0)
+	err := os.WriteFile(name, []byte{0}, 0)
 	if !assert.NoError(t, err) {
 		return
 	}

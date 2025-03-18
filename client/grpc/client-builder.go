@@ -205,7 +205,7 @@ func (bld clientConnBuilder) New(ctx context.Context) (ClientConn, error) {
 
 func (bld *clientConnBuilder) endpoint() (string, error) {
 	ep, err := netPkg.ParseEndpoint(bld.addr)
-	if err == nil {
+	if err == nil && netPkg.AnySchema(ep, netPkg.SchemeTCP, netPkg.SchemeUNIX) {
 		if ep.IsUnixDomain() {
 			return ep.FQN(), nil
 		}
@@ -217,7 +217,7 @@ func (bld *clientConnBuilder) endpoint() (string, error) {
 	if _, err = url.Parse(bld.addr); err == nil {
 		return bld.addr, nil
 	}
-	return "", errors.WithMessagef(err, "bad address (%s)", bld.addr)
+	return "", errors.WithMessagef(err, "bad address '%s'", bld.addr)
 }
 
 // Invoke -

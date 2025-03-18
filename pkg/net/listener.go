@@ -16,13 +16,14 @@ func Listen(endpoint *Endpoint) (net.Listener, error) {
 	if err != nil {
 		return nil, err
 	}
-	switch endpoint.endpointAddress.(type) {
-	case endpointAddressTCP:
-		return net.Listen(endpoint.Network(), addr)
-	case endpointAddressUnix:
+	nw := endpoint.Network()
+	switch nw {
+	case string(SchemeTCP):
+		return net.Listen(nw, addr)
+	case string(SchemeUNIX):
 		return ListenUnixDomain(addr)
 	}
-	return nil, errors.Errorf("Listen: unsupported network '%s'", endpoint.Network())
+	return nil, errors.Errorf("Listen: unsupported network '%s'", nw)
 }
 
 // ListenUnixDomain safe listen unix domain socket

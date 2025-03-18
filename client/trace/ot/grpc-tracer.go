@@ -2,7 +2,6 @@ package ot
 
 import (
 	"context"
-	"net"
 	"path"
 	"runtime"
 	"strconv"
@@ -55,8 +54,8 @@ func (impl *GRPCTracer) attrsFromTarget(target string) []attribute.KeyValue {
 	}
 	var ret []attribute.KeyValue
 	switch ep.Network() {
-	case "tcp":
-		host, port, e := net.SplitHostPort(ep.String())
+	case string(netPkg.SchemeTCP):
+		host, port, e := ep.HostPort()
 		if e != nil {
 			return nil
 		}
@@ -66,7 +65,7 @@ func (impl *GRPCTracer) attrsFromTarget(target string) []attribute.KeyValue {
 			return nil
 		}
 		ret = append(ret, semconv.NetPeerPortKey.Int(n))
-	case "unix":
+	case string(netPkg.SchemeUNIX):
 		ret = append(ret, semconv.NetTransportUnix, otPriv.NetPeerUnixSocketKey.String(ep.String()))
 	}
 	return ret

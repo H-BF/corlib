@@ -1,6 +1,7 @@
 package net
 
 import (
+	"fmt"
 	"net"
 	"regexp"
 	"strings"
@@ -10,7 +11,7 @@ import (
 
 // Endpoint endpoint to connect to
 type Endpoint struct {
-	endpointAddress
+	endpointIFaceBaseImpl
 }
 
 // ParseEndpoint parse endpoint address
@@ -21,6 +22,9 @@ func ParseEndpoint(src string) (*Endpoint, error) {
 		tcp  = "tcp"
 		tcp4 = "tcp4"
 		tcp6 = "tcp6"
+		udp  = "udp"
+		udp4 = "udp4"
+		udp6 = "udp6"
 	)
 	parts := reSchemaAndAddress.FindStringSubmatch(src)
 	if len(parts) < 3 {
@@ -31,8 +35,8 @@ func ParseEndpoint(src string) (*Endpoint, error) {
 	addr := parts[2]
 	switch schema {
 	case unix:
-		ep.endpointAddress = endpointAddressUnix{socketPath: addr}
-	case tcp, tcp4, tcp6, "":
+		ep.endpointIFaceBaseImpl.delegate = endpointAddressUnix{socketPath: addr}
+	case tcp, tcp4, tcp6, "", udp, udp4, udp6:
 		h, p, e := net.SplitHostPort(addr)
 		if e != nil {
 			return nil, errors.Errorf("%s: the addr '%s' has invalid host:port", api, src)
@@ -46,7 +50,11 @@ func ParseEndpoint(src string) (*Endpoint, error) {
 				return nil, errors.Errorf("%s: the addr('%s') is invalid", api, src)
 			}
 		}
-		ep.endpointAddress = endpointAddressTCP{host: h, port: p}
+		if strings.HasPrefix(schema, string(SchemeTCP)) || schema == "" {
+			ep.endpointIFaceBaseImpl.delegate = endpointAddressTCP{host: h, port: p}
+		} else {
+			ep.endpointIFaceBaseImpl.delegate = endpointAddressUDP{host: h, port: p}
+		}
 	default:
 		return nil, errors.Errorf("%s: the addr '%s' has unsupported schema '%s'", api, src, schema)
 	}
@@ -58,40 +66,30 @@ func (ep *Endpoint) String() string {
 	return s
 }
 
-// Address makes net address
-func (ep *Endpoint) Address() (string, error) {
-	const api = "Endpoint.Address"
-	switch t := ep.endpointAddress.(type) {
-	case endpointAddressTCP:
-		return net.JoinHostPort(t.host, t.port), nil
-	case endpointAddressUnix:
-		return t.socketPath, nil
-	}
-	return "", errors.Errorf("%s: endpoint is not initialized", api)
-}
-
 // HostPort gives host - port if TCP case is
 func (ep *Endpoint) HostPort() (host, port string, err error) {
-	const api = "Endpoint.HostPort"
-	switch t := ep.endpointAddress.(type) {
+	switch t := ep.endpointIFaceBaseImpl.delegate.(type) {
 	case endpointAddressTCP:
 		host, port = t.host, t.port
 	default:
-		err = errors.Errorf("%s: endpoint is not a TCP", api)
+		err = errors.Errorf("endpoint is neither TCP nor UDP")
 	}
 	return
 }
 
 // IsUnixDomain returns true when endpoint is unix domain socket
 func (ep *Endpoint) IsUnixDomain() bool {
-	_, ret := ep.endpointAddress.(endpointAddressUnix)
-	return ret
+	return ep.Network() == string(SchemeUNIX)
 }
 
 // FQN full qualified name
 func (ep *Endpoint) FQN() string {
 	if a, _ := ep.Address(); len(a) > 0 {
-		return ep.Network() + "://" + a
+		nw := ep.Network()
+		if len(nw) == 0 {
+			return a
+		}
+		return fmt.Sprintf("%s://%s", nw, a)
 	}
 	return ""
 }
@@ -103,27 +101,72 @@ var (
 )
 
 type (
-	endpointAddress interface {
-		isEndpointAddress()
+	endpointIFace interface {
 		Network() string
+		Address() (string, error)
 	}
 
 	endpointAddressTCP struct {
-		endpointAddress
+		host string
+		port string
+	}
+
+	endpointAddressUDP struct {
 		host string
 		port string
 	}
 
 	endpointAddressUnix struct {
-		endpointAddress
 		socketPath string
+	}
+
+	endpointIFaceBaseImpl struct {
+		delegate endpointIFace
 	}
 )
 
-func (endpointAddressTCP) Network() string {
-	return "tcp"
+// Network impl endpointIFace
+func (bi endpointIFaceBaseImpl) Network() string {
+	if bi.delegate != nil {
+		return bi.delegate.Network()
+	}
+	return ""
 }
 
+// Address impl endpointIFace
+func (bi endpointIFaceBaseImpl) Address() (string, error) {
+	if bi.delegate != nil {
+		return bi.delegate.Address()
+	}
+	return "", errors.New("not initialized")
+}
+
+// Network impl endpointIFace
+func (endpointAddressTCP) Network() string {
+	return string(SchemeTCP)
+}
+
+// Address impl endpointIFace
+func (t endpointAddressTCP) Address() (string, error) {
+	return net.JoinHostPort(t.host, t.port), nil
+}
+
+// Network impl endpointIFace
+func (endpointAddressUDP) Network() string {
+	return string(SchemeUDP)
+}
+
+// Address impl endpointIFace
+func (t endpointAddressUDP) Address() (string, error) {
+	return net.JoinHostPort(t.host, t.port), nil
+}
+
+// Network impl endpointIFace
 func (endpointAddressUnix) Network() string {
-	return "unix"
+	return string(SchemeUNIX)
+}
+
+// Address impl endpointIFace
+func (t endpointAddressUnix) Address() (string, error) {
+	return t.socketPath, nil
 }
