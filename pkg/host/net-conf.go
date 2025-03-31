@@ -83,6 +83,12 @@ func (conf NetConf) Clone() NetConf {
 	}
 }
 
+// Clear -
+func (conf *NetConf) Clear() {
+	conf.Adresses.IPSets.Clear()
+	conf.Devs.Clear()
+}
+
 // LocalIPs get effective local unique IP lists
 func (conf NetConf) LocalIPs() (ip4set IPvSet[IP4], ip6set IPvSet[IP6]) {
 	conf.Adresses.IPSets.Iterate(func(_ LinkID, v IPSet) bool {
