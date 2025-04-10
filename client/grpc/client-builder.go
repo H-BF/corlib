@@ -46,6 +46,7 @@ type (
 		userAgent      string
 		defCallCodec   Codec
 		pathPrefix     string
+		fixedMD        []string
 	}
 
 	nonRootPathClientConn struct {
@@ -109,6 +110,17 @@ func (bld clientConnBuilder) WithCreds(creds credentials.TransportCredentials) c
 	return bld
 }
 
+// WithFixedMD adds some fixed metadata headers kv (key->value) pairs
+func (bld clientConnBuilder) WithFixedMD(kv ...string) clientConnBuilder {
+	if len(kv)%2 != 0 {
+		panic(
+			errors.Errorf("ClientBuilder/WithFixedMD: we got odd number items"),
+		)
+	}
+	bld.fixedMD = append(bld.fixedMD, kv...)
+	return bld
+}
+
 // NewConn makes new grpc client conn && ipml 'ClientConnProvider'
 func (bld clientConnBuilder) New(ctx context.Context) (ClientConn, error) {
 	const api = "grpc/new-client-conn"
@@ -120,6 +132,15 @@ func (bld clientConnBuilder) New(ctx context.Context) (ClientConn, error) {
 		streamInterceptors []grpc.StreamClientInterceptor
 		unaryInterceptors  []grpc.UnaryClientInterceptor
 	)
+
+	if len(bld.fixedMD) != 0 {
+		streamInterceptors = append(
+			streamInterceptors, AddMetaToOutgoingStreamInterceptor(bld.fixedMD...),
+		)
+		unaryInterceptors = append(
+			unaryInterceptors, AddMetaToOutgoingUnaryInterceptor(bld.fixedMD...),
+		)
+	}
 
 	if endpoint, err = bld.endpoint(); err != nil {
 		return nil, errors.WithMessage(err, api)

@@ -5,19 +5,19 @@ type NullObserver struct{}
 
 var _ Observer = (*NullObserver)(nil)
 
-// Close - impl Observer iface
+// Close impl Observer iface
 func (NullObserver) Close() error {
 	return nil
 }
 
-// SubscribeEvents - impl Observer iface
+// SubscribeEvents impl Observer iface
 func (NullObserver) SubscribeEvents(...EventType) {}
 
-// UnsubscribeEvents - impl Observer iface
+// UnsubscribeEvents impl Observer iface
 func (NullObserver) UnsubscribeEvents(...EventType) {}
 
-// UnsubscribeAllEvents - impl Observer iface
+// UnsubscribeAllEvents impl Observer iface
 func (NullObserver) UnsubscribeAllEvents() {}
 
-// Observe -
+// Observe impl Observer iface
 func (NullObserver) Observe(...EventType) {}

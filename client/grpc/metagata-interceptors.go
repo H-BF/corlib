@@ -21,7 +21,9 @@ func AddMetaToOutgoingUnaryInterceptor(kv ...string) grpc.UnaryClientInterceptor
 // AddMetaToOutgoingStreamInterceptor - specifies fixed headers for every rpc as kv array
 func AddMetaToOutgoingStreamInterceptor(kv ...string) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		ctx = metadata.AppendToOutgoingContext(ctx, kv...)
+		if len(kv) != 0 {
+			ctx = metadata.AppendToOutgoingContext(ctx, kv...)
+		}
 		return streamer(ctx, desc, cc, method, opts...)
 	}
 }
