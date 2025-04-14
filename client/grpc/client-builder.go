@@ -36,6 +36,8 @@ type (
 
 	// TransportCredentials is an alias to credentials.TransportCredentials
 	TransportCredentials = credentials.TransportCredentials
+	// PerRPCCredentials is an alias to credentials.PerRPCCredentials
+	PerRPCCredentials = credentials.PerRPCCredentials
 
 	clientConnBuilder struct {
 		addr           string
@@ -43,6 +45,7 @@ type (
 		retriesBackoff Backoff
 		maxRetries     uint
 		creds          TransportCredentials
+		perRPCCreds    []PerRPCCredentials
 		userAgent      string
 		defCallCodec   Codec
 		pathPrefix     string
@@ -105,8 +108,14 @@ func (bld clientConnBuilder) WithPathPrefix(p string) clientConnBuilder {
 }
 
 // WithCreds -
-func (bld clientConnBuilder) WithCreds(creds credentials.TransportCredentials) clientConnBuilder {
+func (bld clientConnBuilder) WithCreds(creds TransportCredentials) clientConnBuilder {
 	bld.creds = creds
+	return bld
+}
+
+// WithPerRPCCreds -
+func (bld clientConnBuilder) WithPerRPCCreds(creds ...PerRPCCredentials) clientConnBuilder {
+	bld.perRPCCreds = creds
 	return bld
 }
 
@@ -152,6 +161,7 @@ func (bld clientConnBuilder) New(ctx context.Context) (ClientConn, error) {
 	dialOpts := []grpc.DialOption{
 		grpc.WithTransportCredentials(creds),
 	}
+	//grpc.WithPerRPCCredentials()
 	if dialDuration := bld.dialDuration; dialDuration <= 0 {
 		dialOpts = append(dialOpts, grpc.WithReturnConnectionError())
 	} else {
@@ -205,6 +215,11 @@ func (bld clientConnBuilder) New(ctx context.Context) (ClientConn, error) {
 	if c := bld.defCallCodec; c != nil {
 		dialOpts = append(dialOpts,
 			grpc.WithDefaultCallOptions(grpc.ForceCodec(c)),
+		)
+	}
+	for i := range bld.perRPCCreds {
+		dialOpts = append(dialOpts,
+			grpc.WithPerRPCCredentials(bld.perRPCCreds[i]),
 		)
 	}
 	if c, err = grpc.DialContext(ctx, endpoint, dialOpts...); err != nil {
