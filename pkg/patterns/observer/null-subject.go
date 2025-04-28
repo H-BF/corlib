@@ -16,3 +16,6 @@ func (NullSubject) DetachAllObservers() {}
 
 // ObserversAttach  impl Subject iface
 func (NullSubject) Notify(...EventType) {}
+
+// Close impl Subject iface
+func (NullSubject) Close() error { return nil }

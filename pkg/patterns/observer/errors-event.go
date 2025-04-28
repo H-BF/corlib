@@ -6,7 +6,7 @@ import (
 
 // ErrorsEvent errors event
 type ErrorsEvent struct {
-	EventType
+	EventTypeBaseImpl
 	Errors []error
 }
 

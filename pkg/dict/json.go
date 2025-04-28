@@ -24,10 +24,7 @@ func (dict *dictJsonHelper[Tk, Tv]) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &items); err != nil {
 		return err
 	}
-	for i := range items {
-		it := items[i]
-		dict.d.Put(it.K, it.V)
-	}
+	dict.d.PutMany(items...)
 	return nil
 }
 

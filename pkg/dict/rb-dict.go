@@ -64,6 +64,15 @@ func (dict *RBDict[Tk, Tv]) Put(k Tk, v Tv) {
 	dict.m.Put(k, v)
 }
 
+// PutMany -
+func (dict *RBDict[Tk, Tv]) PutMany(items ...KV[Tk, Tv]) {
+	dict.ensureInit()
+	for i := range items {
+		it := items[i]
+		dict.m.Put(it.K, it.V)
+	}
+}
+
 // Insert -
 func (dict *RBDict[Tk, Tv]) Insert(k Tk, v Tv) bool {
 	dict.ensureInit()
@@ -126,7 +135,7 @@ func (dict *RBDict[Tk, Tv]) At(k Tk) Tv {
 }
 
 // Eq -
-func (dict *RBDict[Tk, Tv]) Eq(other Dict[Tk, Tv], valuesEq func(vL, vR Tv) bool) bool {
+func (dict *RBDict[Tk, Tv]) Eq(other DictR[Tk, Tv], valuesEq func(vL, vR Tv) bool) bool {
 	if dict.Len() != other.Len() {
 		return false
 	}

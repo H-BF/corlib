@@ -63,33 +63,13 @@ func NewJobScheduler(appCtx context.Context, conf JobSchedulerConf) (JobSchedule
 	if conf.Backoff == nil {
 		conf.Backoff = &backoff.StopBackoff
 	}
-	ret := &jobSchedulerImpl{
+	return &jobSchedulerImpl{
 		subject:          observer.NewSubject(),
 		appCtx:           appCtx,
 		conf:             conf,
-		closed:           make(chan struct{}),
+		close:            make(chan struct{}),
 		asyncEventsQueue: queue.NewFIFO(context.Background()),
-	}
-	subj := ret.subject
-	que := ret.asyncEventsQueue
-	go func() { //notify async events
-		for {
-			v, e := que.Get(context.Background())
-			if e != nil {
-				_ = que.Close()
-				return
-			}
-			switch t := v.(type) {
-			case closeEventQueue:
-				_ = que.Close()
-			case allow2continue:
-				close(t)
-			case observer.EventType:
-				subj.Notify(t)
-			}
-		}
-	}()
-	return ret, nil
+	}, nil
 }
 
 //---------------------------------===================== IMPL =====================---------------------------------
@@ -100,7 +80,8 @@ type (
 		appCtx           context.Context
 		subject          observer.Subject
 		enabled          int32
-		closed           chan struct{}
+		close            chan struct{}
+		stopped          chan struct{}
 		scheduleOnce     sync.Once
 		closeOnce        sync.Once
 		conf             JobSchedulerConf
@@ -124,12 +105,15 @@ type (
 	}
 
 	allow2continue chan struct{}
-
-	closeEventQueue struct{}
 )
 
 // DetachAllObservers override observer.Subject.DetachAllObservers
 func (ps *protectSubject) DetachAllObservers() {}
+
+// Close dont close
+func (ps *protectSubject) Close() error {
+	return nil
+}
 
 func (man *jobSchedulerImpl) Close() error {
 	var doClose bool
@@ -138,11 +122,9 @@ func (man *jobSchedulerImpl) Close() error {
 		doClose = true
 	})
 	if doClose {
-		man.asyncNotify(
-			man.log("scheduler will close"),
-			OnJobSchedulerClose{JobID: man.ID()},
-		)
-		close(man.closed)
+		man.subject.Notify(OnJobSchedulerClose{JobID: man.ID()})
+		close(man.close)
+		_ = man.asyncEventsQueue.Close()
 		man.Lock()
 		c, t := man.runningJob, man.timer
 		man.timer = nil
@@ -153,7 +135,10 @@ func (man *jobSchedulerImpl) Close() error {
 		if t != nil {
 			_ = t.Stop()
 		}
-		man.asyncNotify(closeEventQueue{})
+		if man.stopped != nil {
+			<-man.stopped
+		}
+		_ = man.subject.Close()
 	}
 	return nil
 }
@@ -189,6 +174,28 @@ func (man *jobSchedulerImpl) SetScheduler(sch scheduler.Scheduler) {
 // Schedule ...
 func (man *jobSchedulerImpl) Schedule() {
 	man.scheduleOnce.Do(func() {
+		man.stopped = make(chan struct{})
+		go func() { //notify async events
+			defer close(man.stopped)
+			for {
+				v, e := man.asyncEventsQueue.Get(context.Background())
+				if e != nil {
+					if !errors.Is(e, queue.ErrQueueClosed) {
+						man.subject.Notify(OnJobSchedulerStop{
+							JobID:  man.ID(),
+							Reason: e,
+						})
+					}
+					return
+				}
+				switch t := v.(type) {
+				case allow2continue:
+					close(t)
+				case observer.EventType:
+					man.subject.Notify(t)
+				}
+			}
+		}()
 		man.Lock()
 		man.getBackoff().Reset()
 		delta := man.calcPauseDuration(time.Time{}, false)
@@ -247,8 +254,8 @@ func (man *jobSchedulerImpl) Enable(enabled bool) {
 
 func (man *jobSchedulerImpl) isEnabled() bool {
 	select {
-	case <-man.appCtx.Done():
-	case <-man.closed:
+	case <-man.stopped:
+	case <-man.close:
 	default:
 		return atomic.AddInt32(&man.enabled, 0) != 0
 	}
@@ -260,7 +267,8 @@ func (man *jobSchedulerImpl) calcPauseDuration(startTime time.Time, fromBackoff 
 	if fromBackoff {
 		ret = man.getBackoff().NextBackOff()
 	} else {
-		ret = man.conf.TaskScheduler.NextActivity(startTime).Sub(time.Now()) //nolint:gosimple
+		na := man.conf.TaskScheduler.NextActivity(startTime)
+		ret = time.Until(na)
 	}
 	if ret != backoff.Stop && ret < minDelayBeforeStart {
 		ret = minDelayBeforeStart
@@ -370,8 +378,8 @@ func (man *jobSchedulerImpl) finishJob(jobResults []interface{}, jobStartFailure
 
 	select {
 	case <-wait4continue:
-	case <-man.closed:
-	case <-man.appCtx.Done():
+	case <-man.close:
+	case <-man.stopped:
 	}
 	if !man.isEnabled() {
 		man.asyncNotify(man.log("scheduler won`t plan next run cause it is disabled"))

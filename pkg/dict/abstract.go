@@ -1,19 +1,29 @@
 package dict
 
+import (
+	"slices"
+)
+
 type (
-	// Dict abstact interface
-	Dict[Tk any, Tv any] interface {
-		Clear()
+	// DictR abstact dictionary readonly interface
+	DictR[Tk any, Tv any] interface {
 		Len() int
-		Del(keys ...Tk)
-		Put(k Tk, v Tv)
-		Insert(k Tk, v Tv) bool
 		Get(k Tk) (v Tv, ok bool)
 		Keys() []Tk
 		Items() Items[Tk, Tv]
 		Iterate(f func(k Tk, v Tv) bool)
 		At(k Tk) Tv
-		Eq(other Dict[Tk, Tv], valuesEq func(vL, vR Tv) bool) bool
+		Eq(other DictR[Tk, Tv], valuesEq func(vL, vR Tv) bool) bool
+	}
+
+	// Dict abstact interface
+	Dict[Tk any, Tv any] interface {
+		DictR[Tk, Tv]
+		Clear()
+		Del(keys ...Tk)
+		Put(k Tk, v Tv)
+		PutMany(...KV[Tk, Tv])
+		Insert(k Tk, v Tv) bool
 	}
 
 	// KV -
@@ -25,28 +35,31 @@ type (
 	// Items -
 	Items[K any, V any] []KV[K, V]
 
-	// Set -
-	Set[T any] interface {
-		Clear()
+	// SetR abstract set readonly interface
+	SetR[T any] interface {
 		Len() int
-		Del(keys ...T)
-		Put(k T)
-		PutMany(vals ...T)
-		Insert(k T) bool
 		Contains(k T) bool
 		ContainsAny(k ...T) bool
 		Iterate(f func(k T) bool)
 		Values() []T
-		Eq(Set[T]) bool
+		Eq(SetR[T]) bool
+	}
+
+	// Set abstract set interface
+	Set[T any] interface {
+		SetR[T]
+		Clear()
+		Del(keys ...T)
+		Put(k T)
+		PutMany(vals ...T)
+		Insert(k T) bool
 	}
 )
 
 // Reserve -
-func (i *Items[K, V]) Reserve(n int) {
-	if n < 0 {
-		panic("negative")
-	}
-	*i = make(Items[K, V], 0, n)
+func (i *Items[K, V]) Reserve(n int) *Items[K, V] {
+	*i = slices.Grow(*i, n)
+	return i
 }
 
 // Add -

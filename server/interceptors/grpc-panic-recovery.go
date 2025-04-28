@@ -76,25 +76,23 @@ func NewRecovery(opts ...RecoveryOption) *Recovery {
 		o(&ret.opts)
 	}
 	if len(ret.opts.observers) > 0 {
+		var observers []observer.Observer
 		ret.subject = observer.NewSubject()
-		var evt OnPanicEvent
 		seen := make(map[reflect.Value]bool)
 		for _, obs := range ret.opts.observers {
 			if v := reflect.ValueOf(obs); !seen[v] {
 				seen[v] = true
-			} else {
-				continue
+				observers = append(
+					observers, observer.NewObserverT(obs, false, OnPanicEvent{}),
+				)
 			}
-			o := observer.NewObserver(func(event observer.EventType) {
-				if ev, ok := event.(OnPanicEvent); ok {
-					obs(ev)
-				}
-			}, false, evt)
-			ret.subject.ObserversAttach(o)
 		}
-		ret.opts.observers = nil
+		ret.subject.ObserversAttach(observers...)
 		runtime.SetFinalizer(ret, func(o *Recovery) {
-			o.subject.DetachAllObservers()
+			_ = o.subject.Close()
+			for i := range observers {
+				_ = observers[i].Close()
+			}
 		})
 	}
 	return ret

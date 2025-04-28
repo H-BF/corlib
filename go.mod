@@ -1,6 +1,6 @@
 module github.com/H-BF/corlib
 
-go 1.21
+go 1.23
 
 require (
 	github.com/ahmetb/go-linq/v3 v3.2.0

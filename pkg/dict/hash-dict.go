@@ -42,6 +42,15 @@ func (dict *HDict[Tk, Tv]) Put(k Tk, v Tv) {
 	dict.hmap[k] = v
 }
 
+// PutMany -
+func (dict *HDict[Tk, Tv]) PutMany(items ...KV[Tk, Tv]) {
+	dict.ensureInit()
+	for i := range items {
+		it := items[i]
+		dict.hmap[it.K] = it.V
+	}
+}
+
 // Insert -
 func (dict *HDict[Tk, Tv]) Insert(k Tk, v Tv) bool {
 	dict.ensureInit()
@@ -105,7 +114,7 @@ func (dict *HDict[Tk, Tv]) Iterate(f func(k Tk, v Tv) bool) {
 }
 
 // Eq -
-func (dict *HDict[Tk, Tv]) Eq(other Dict[Tk, Tv], valuesEq func(vL, vR Tv) bool) bool {
+func (dict *HDict[Tk, Tv]) Eq(other DictR[Tk, Tv], valuesEq func(vL, vR Tv) bool) bool {
 	if dict.Len() != other.Len() {
 		return false
 	}

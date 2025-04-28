@@ -21,7 +21,7 @@ var ( //errors
 
 // SubscribeOnAllEvents subscribe on all events
 func SubscribeOnAllEvents(obs observer.Observer) {
-	obs.SubscribeEvents([]observer.EventType{
+	obs.SubscribeEvents(
 		OnJobSchedulerClose{},
 		OnJobSchedulerStarted{},
 		OnJobSchedulerEnabled{},
@@ -29,7 +29,7 @@ func SubscribeOnAllEvents(obs observer.Observer) {
 		OnJobStarted{},
 		OnJobFinished{},
 		OnJobLog{},
-	}...)
+	)
 }
 
 // OnJobLog info / debug log

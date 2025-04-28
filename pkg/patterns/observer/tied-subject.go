@@ -1,22 +1,27 @@
 package observer
 
-// NewTiedSubj -
-func NewTiedSubj(tied Subject) Subject {
-	return &tiedSubject{
-		Subject: NewSubject(),
-		tied:    tied,
+// ComposeWithObservees -
+func ComposeWithObservees(s Subject, observees ...Observee) Subject {
+	if len(observees) == 0 {
+		return s
+	}
+	return &subjectAndObserveesComopsit{
+		Subject:   s,
+		observees: observees,
 	}
 }
 
-type tiedSubject struct {
+type subjectAndObserveesComopsit struct {
 	Subject
-	tied Subject
+	observees []Observee
 }
 
-var _ Subject = (*tiedSubject)(nil)
+var _ Subject = (*subjectAndObserveesComopsit)(nil)
 
 // Notify impl observer.Subject iface
-func (sb *tiedSubject) Notify(events ...EventType) {
+func (sb *subjectAndObserveesComopsit) Notify(events ...EventType) {
 	sb.Subject.Notify(events...)
-	sb.tied.Notify(events...)
+	for i := range sb.observees {
+		sb.observees[i].Notify(events...)
+	}
 }

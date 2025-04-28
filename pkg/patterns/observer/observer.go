@@ -16,6 +16,19 @@ func NewObserver(er EventReceiver, async bool, events ...EventType) Observer {
 	return ret
 }
 
+// NewObserverT ia a generic of NewObserver
+func NewObserverT[T EventType](er func(T), async bool, evs ...T) Observer {
+	ret := NewObserver(func(event EventType) {
+		if ev, ok := event.(T); ok {
+			er(ev)
+		}
+	}, async)
+	for i := range evs {
+		ret.SubscribeEvents(evs[i])
+	}
+	return ret
+}
+
 type observerImpl struct {
 	mx sync.RWMutex
 	EventReceiver

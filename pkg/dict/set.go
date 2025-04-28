@@ -121,7 +121,7 @@ func (set *impSet[T, F]) Values() []T {
 }
 
 // Eq -
-func (set *impSet[T, F]) Eq(other Set[T]) bool {
+func (set *impSet[T, F]) Eq(other SetR[T]) bool {
 	if set.Len() != other.Len() {
 		return false
 	}

@@ -16,7 +16,7 @@ type (
 	}
 
 	//EventReceiver получалель сообщений
-	EventReceiver func(event EventType)
+	EventReceiver = func(event EventType)
 
 	//Observer тот кто получит сообщения
 	Observer interface {
@@ -24,15 +24,31 @@ type (
 		SubscribeEvents(...EventType)
 		UnsubscribeEvents(...EventType)
 		UnsubscribeAllEvents()
+		Recipient
+	}
+
+	// Recipient то что уведомляется
+	Recipient interface {
 		Observe(...EventType)
+	}
+
+	// Observee наблюдаемая сущность
+	Observee interface {
+		Notify(...EventType)
+	}
+
+	// ObserversHub -
+	ObserversHub interface {
+		ObserversAttach(...Observer)
+		ObserversDetach(...Observer)
+		DetachAllObservers()
 	}
 
 	//Subject источник сообщений
 	Subject interface {
-		ObserversAttach(...Observer)
-		ObserversDetach(...Observer)
-		DetachAllObservers()
-		Notify(...EventType)
+		Observee
+		ObserversHub
+		Close() error
 	}
 )
 

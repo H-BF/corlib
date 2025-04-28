@@ -6,13 +6,13 @@ import (
 )
 
 // NewTextEvent ...
-func NewTextEvent(msg string, args ...interface{}) TextMessageEvent {
+func NewTextEvent(msg string, args ...any) TextMessageEvent {
 	return TextMessageEvent{}.AddFmt(msg, args...)
 }
 
 // TextMessageEvent simple textual message
 type TextMessageEvent struct {
-	EventType
+	EventTypeBaseImpl
 	parts []struct {
 		message string
 		args    []interface{}

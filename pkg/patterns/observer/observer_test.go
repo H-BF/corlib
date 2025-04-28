@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type event1 struct {
@@ -32,6 +33,20 @@ func Test_Observer(t *testing.T) {
 	subj.Notify(event1{idata: 100500}, event2{Property: "100500"})
 	assert.Equal(t, 100500, idata)
 	assert.Equal(t, "100500", sdata)
+}
+
+func Test_ObserverT(t *testing.T) {
+	subj := NewSubject()
+	type data = EventTypeT[int]
+	var got int
+	subj.ObserversAttach(NewObserverT(func(d data) {
+		got = d.Property
+	}, false, data{}))
+	prop := data{
+		Property: 100500,
+	}
+	subj.Notify(prop)
+	require.Equal(t, prop.Property, got)
 }
 
 func Test_ObserverAsync(t *testing.T) {
