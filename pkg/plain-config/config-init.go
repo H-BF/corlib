@@ -1,6 +1,7 @@
 package plain_config
 
 import (
+	"flag"
 	"io"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 	"sync/atomic"
 
 	"github.com/pkg/errors"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -52,9 +54,29 @@ type (
 		Old []string
 		New []string
 	}
+
+	flag2bind struct {
+		Option
+		k string
+		f *pflag.Flag
+	}
 )
 
-// WithDefValue -
+// BindFlag option
+func BindFlag[tKey ~string, tFlag *pflag.Flag | *flag.Flag](key tKey, f tFlag) Option {
+	ret := flag2bind{
+		k: string(key),
+	}
+	switch a := any(f).(type) {
+	case *pflag.Flag:
+		ret.f = a
+	case *flag.Flag:
+		ret.f = pflag.PFlagFromGoFlag(a)
+	}
+	return ret
+}
+
+// WithDefValue option
 func WithDefValue[T ValueAccessorKeyType](key T, v any) Option {
 	return defKeyValue{
 		key: key.String(),
@@ -116,6 +138,10 @@ func InitGlobalConfig(opts ...Option) error {
 				pairs = append(pairs, t.Old[i], t.New[i])
 			}
 			cfgHolder.SetEnvKeyReplacer(strings.NewReplacer(pairs...))
+		case flag2bind:
+			if e := cfgHolder.BindPFlag(t.k, t.f); e != nil {
+				return errors.Wrapf(e, "%s: bing flag '%s'", api, t.f.Name)
+			}
 		default:
 			return errors.Wrapf(errors.New("unexpected option"),
 				"%s: consume source type '%T'", api, opt)
