@@ -45,6 +45,13 @@ type (
 		Option
 		EnvPrefix string
 	}
+
+	// WithEnvKeyReplacer option
+	WithEnvKeyReplacer struct {
+		Option
+		Old []string
+		New []string
+	}
 )
 
 // WithDefValue -
@@ -98,6 +105,17 @@ func InitGlobalConfig(opts ...Option) error {
 		case WithAcceptEnvironment:
 			cfgHolder.AutomaticEnv()
 			cfgHolder.SetEnvPrefix(t.EnvPrefix)
+		case WithEnvKeyReplacer:
+			if len(t.Old) != len(t.New) {
+				return errors.Errorf(
+					"%s: in opt WithEnvKeyReplacer found len(Old) != len(New)", api,
+				)
+			}
+			var pairs []string
+			for i := range t.Old {
+				pairs = append(pairs, t.Old[i], t.New[i])
+			}
+			cfgHolder.SetEnvKeyReplacer(strings.NewReplacer(pairs...))
 		default:
 			return errors.Wrapf(errors.New("unexpected option"),
 				"%s: consume source type '%T'", api, opt)
