@@ -112,18 +112,26 @@ func (rb RuleBuilder) Counter() RuleBuilder {
 
 // InSet -
 func (rb RuleBuilder) InSet(s *nftlib.Set) RuleBuilder {
-	if s != nil {
-		n := s.Name
-		if s.Anonymous {
-			n = fmt.Sprintf(s.Name, s.ID)
-		}
-		rb.exprs = append(rb.exprs,
-			&expr.Lookup{
-				SourceRegister: 1,
-				SetName:        n,
-				SetID:          s.ID,
-			})
+	return rb.lookupAtSet(s, false)
+}
+
+// NotInSet -
+func (rb RuleBuilder) NotInSet(s *nftlib.Set) RuleBuilder {
+	return rb.lookupAtSet(s, true)
+}
+
+func (rb RuleBuilder) lookupAtSet(s *nftlib.Set, invert bool) RuleBuilder {
+	n := s.Name
+	if s.Anonymous {
+		n = fmt.Sprintf(s.Name, s.ID)
 	}
+	rb.exprs = append(rb.exprs,
+		&expr.Lookup{
+			SourceRegister: 1,
+			SetName:        n,
+			SetID:          s.ID,
+			Invert:         invert,
+		})
 	return rb
 }
 
@@ -331,6 +339,32 @@ func (rb RuleBuilder) IP6() RuleBuilder {
 			Data:     []byte{unix.NFPROTO_IPV6},
 		}, //ip6
 	)
+	return rb
+}
+
+// IPEncap -
+func (rb RuleBuilder) IPEncap(ipVer uint8) (ret RuleBuilder) {
+	switch ipVer {
+	case iplib.IP4Version, iplib.IP6Version:
+		isIp4 := ipVer == iplib.IP4Version
+		rb = tern(isIp4, rb.IP4, rb.IP6)()
+		rb.exprs = append(rb.exprs,
+			&expr.Payload{
+				DestRegister: 1,
+				Offset:       tern(isIp4, uint32(9), 6),
+				Len:          1,
+				Base:         expr.PayloadBaseNetworkHeader,
+			},
+			&expr.Cmp{
+				Op:       expr.CmpOpEq,
+				Register: 1,
+				Data:     []byte{0x4},
+			},
+		)
+	default:
+		panic(fmt.Errorf("unsupported proto ver '%v'", ipVer))
+
+	}
 	return rb
 }
 
