@@ -687,3 +687,46 @@ func testMultiRangeSearch(t *testing.T) {
 		}
 	}
 }
+
+func Test_MergeAdjasentRanges(t *testing.T) {
+	type (
+		dataT = int
+	)
+	cases := []struct {
+		c        string
+		expected string
+	}{
+		{"[1, 5][10, 20]", "[1,6)[10,21)"},
+		{"[8, 7][10, 20]", "[10,21)"},
+		{"[10, 20], [8,7]", "[10,21)"},
+		{"[10, 20], (20,30]", "[10,31)"},
+		{"[10, 20), [20,30]", "[10,31)"},
+		{"[10, 20), (19,30]", "[10,31)"},
+		{"[10, 20], [21,30]", "[10,31)"},
+		{"[10, 20], [21,30], [31,40]", "[10,41)"},
+	}
+
+	var rr []Range[dataT]
+	factory := IntsFactory(dataT(0))
+	for i := range cases { //nolint
+		rr = rr[:0]
+		c := cases[i]
+		err := ParseMultiRange(c.c,
+			func(src []byte) (Range[dataT], error) {
+				var ret Range[dataT]
+				e := ParseIntsRange(src, &ret)
+				return ret, e
+			},
+			func(i Range[dataT]) bool {
+				rr = append(rr, i)
+				return true
+			})
+		require.NoErrorf(t, err, "%v) on parsing '%s'", i, cases[i].c)
+
+		mr := NewMultiRange(factory)
+		mr.Update(CombineMerge, rr...)
+		mr = mr.MergeAdjasentRanges()
+
+		require.Equalf(t, c.expected, mr.String(), "%v) case '%s'", i, c.c)
+	}
+}

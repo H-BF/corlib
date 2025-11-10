@@ -100,3 +100,33 @@ func (mr MultiRange[T]) Eq(other MultiRange[T]) bool {
 	}
 	return true
 }
+
+// MergeAdjasentRanges -
+func (mr MultiRange[T]) MergeAdjasentRanges() MultiRange[T] {
+	if mr.factory == nil {
+		panic(
+			fmt.Errorf("source MultiRange is not initialized"),
+		)
+	}
+	ret := NewMultiRange(mr.factory)
+	ranges := &ret.ranges
+	var zero T
+	var prevRange Range[T]
+	for r := range mr.Iterate {
+		if !r.IsNull() {
+			newRange := ret.factory.Range(zero, true, zero, true)
+			newRange.SetBounds(r.Bounds())
+			if prevRange != nil {
+				lb0, rb0 := prevRange.Bounds()
+				lb1, rb1 := newRange.Bounds()
+				if rb0.Cmp(lb1.Adjacent()) == 0 {
+					prevRange.SetBounds(lb0, rb1)
+					continue
+				}
+			}
+			*ranges = append(*ranges, newRange)
+			prevRange = newRange
+		}
+	}
+	return ret
+}
