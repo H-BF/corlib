@@ -1,6 +1,6 @@
 module github.com/H-BF/corlib
 
-go 1.23
+go 1.24
 
 require (
 	github.com/ahmetb/go-linq/v3 v3.2.0
@@ -24,6 +24,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/soheilhy/cmux v0.1.5
 	github.com/spf13/cast v1.6.0
+	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	github.com/vishvananda/netlink v1.3.0
@@ -83,7 +84,6 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.18.0 // indirect
