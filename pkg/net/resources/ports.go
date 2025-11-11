@@ -106,5 +106,6 @@ func (ps PortSource) ToPortRanges() (PortRanges, error) {
 		return ret, err
 	}
 	ret.Update(ranges.CombineMerge, src...)
+	ret = ret.MergeAdjasentRanges()
 	return ret, nil
 }

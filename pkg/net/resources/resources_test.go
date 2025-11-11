@@ -135,6 +135,22 @@ func Test_PortSource2PortRange(t *testing.T) {
 	}
 }
 
+func Test_PortSource2PortRanges(t *testing.T) {
+	cases := [...]struct {
+		src PortSource
+		exp string
+	}{
+		{"1,10,20", "[1,2)[10,11)[20,21)"},
+		{"1-20,21,22,30", "[1,23)[30,31)"},
+	}
+	for i := range cases {
+		c := cases[i]
+		mr, e := c.src.ToPortRanges()
+		require.NoErrorf(t, e, "%v# '%s'", i, c.src)
+		require.Equalf(t, c.exp, mr.String(), "%v# '%s'", i, c.src)
+	}
+}
+
 func Test_PortSourceEq(t *testing.T) {
 	cases := []struct {
 		S1, S2 PortSource
