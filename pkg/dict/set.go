@@ -1,5 +1,17 @@
 package dict
 
+// MakeRBSet -
+func MakeRBSet[T any](args ...T) (ret RBSet[T]) {
+	ret.PutMany(args...)
+	return ret
+}
+
+// MakeHSet -
+func MakeHSet[T comparable](args ...T) (ret HSet[T]) {
+	ret.PutMany(args...)
+	return ret
+}
+
 type (
 	//HSet hash based set
 	HSet[T comparable] struct {
@@ -10,7 +22,9 @@ type (
 	RBSet[T any] struct {
 		impSet[T, rbDictFactory[T, struct{}]]
 	}
+)
 
+type (
 	factoryOfDict[Tk any, Tv any] interface {
 		construct() Dict[Tk, Tv]
 	}
