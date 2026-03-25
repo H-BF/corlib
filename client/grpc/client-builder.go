@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/encoding"
+	"google.golang.org/grpc/keepalive"
 )
 
 // ClientFromAddress  builder for 'grpc' client conn
@@ -50,6 +51,7 @@ type (
 		defCallCodec   Codec
 		pathPrefix     string
 		fixedMD        []string
+		keepalive      keepalive.ClientParameters
 	}
 
 	nonRootPathClientConn struct {
@@ -121,12 +123,19 @@ func (bld clientConnBuilder) WithPerRPCCreds(creds ...PerRPCCredentials) clientC
 
 // WithFixedMD adds some fixed metadata headers kv (key->value) pairs
 func (bld clientConnBuilder) WithFixedMD(kv ...string) clientConnBuilder {
+	_ = grpc.WithKeepaliveParams
 	if len(kv)%2 != 0 {
 		panic(
 			errors.Errorf("ClientBuilder/WithFixedMD: we got odd number items"),
 		)
 	}
 	bld.fixedMD = append(bld.fixedMD, kv...)
+	return bld
+}
+
+// WithKeepAlive sets/unsets GRPC-client keepalive params
+func (bld clientConnBuilder) WithKeepAlive(v keepalive.ClientParameters) clientConnBuilder {
+	bld.keepalive = v
 	return bld
 }
 
@@ -221,6 +230,9 @@ func (bld clientConnBuilder) New(ctx context.Context) (ClientConn, error) {
 		dialOpts = append(dialOpts,
 			grpc.WithPerRPCCredentials(bld.perRPCCreds[i]),
 		)
+	}
+	if bld.keepalive != (keepalive.ClientParameters{}) {
+		dialOpts = append(dialOpts, grpc.WithKeepaliveParams(bld.keepalive))
 	}
 	if c, err = grpc.DialContext(ctx, endpoint, dialOpts...); err != nil {
 		return nil, errors.WithMessage(err, api)
